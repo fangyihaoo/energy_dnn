@@ -1,1 +1,1 @@
-# Enery Law Constraint Deep Neural Network
+# Energy Law Constraint Deep Neural Network
