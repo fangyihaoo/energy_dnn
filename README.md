@@ -1,1 +1,1 @@
-# Energy Law Constraint Deep Neural Network
+# Energy Dissipation Constrained Deep Neural Network
