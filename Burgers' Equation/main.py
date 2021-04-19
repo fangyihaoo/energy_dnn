@@ -22,7 +22,7 @@ def main():
 
 
     'Nu = 100 Boundary and initial points(random selection), Nf = 10000 Collocation points by lhs' 
-    Nu, Nf = (100, 1000)
+    Nu, Nf = (100, 10000)
 
     X_f_train, X_u_train, u_train, X_u_test, u_true = DataPrep(path, Nu, Nf)
 
