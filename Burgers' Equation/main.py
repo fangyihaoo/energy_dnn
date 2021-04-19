@@ -18,7 +18,7 @@ def main():
     if device == 'cuda': 
         print(torch.cuda.get_device_name())
         
-    path = '../PINN/data/burgers_shock.mat'
+    path = 'burgers_shock.mat'
 
 
     'Nu = 100 Boundary and initial points(random selection), Nf = 10000 Collocation points by lhs' 
