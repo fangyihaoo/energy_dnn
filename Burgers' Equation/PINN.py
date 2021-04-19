@@ -6,7 +6,7 @@ import scipy
 
 'Network structure'
 class PINN(nn.Module):
-    def __init__(self, num_input, num_neuron, num_output, num_layer, lowerboud, upperbound):
+    def __init__(self, num_input, num_neuron, num_output, num_layer, lowerboud, upperbound):   # num_layer means the number of hidden layer
         super(PINN,self).__init__()
         
         'Initilize iter'
