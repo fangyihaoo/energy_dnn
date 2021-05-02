@@ -44,6 +44,7 @@ def train(**kwargs):
         model.load(opt.load_model_path)
     model.to(device)
 
+    model.apply(weight_init)
     
     # optimizer
     # we only apply L2 penalty on weight
