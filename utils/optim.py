@@ -25,21 +25,21 @@ class Optim(object):
 
         elif self.method == 'adagrad':
             if len(self.params) == 1:
-                return optim.Adagrad(self.params, lr = self.lr)
-            else:
                 return optim.Adagrad(self.params, lr = self.lr, weight_decay = self.weight_decay)
+            else:
+                return optim.Adagrad(self.params, lr = self.lr)
 
         elif self.method == 'rmsprop':
             if len(self.params) == 1:
-                return optim.RMSProp(self.params, lr = self.lr, alpha = 0.9)
-            else:
                 return optim.RMSProp(self.params, lr = self.lr, alpha = 0.9, weight_decay = self.weight_decay)
+            else:
+                return optim.RMSProp(self.params, lr = self.lr, alpha = 0.9)
 
         elif self.method == 'adam':
             if len(self.params) == 1:
-                return optim.Adam(self.params, lr=self.lr)
-            else:
                 return optim.Adam(self.params, lr=self.lr, weight_decay = self.weight_decay)
+            else:
+                return optim.Adam(self.params, lr=self.lr)
 
         else:
             raise RuntimeError("Invalid optim method: " + self.method)
