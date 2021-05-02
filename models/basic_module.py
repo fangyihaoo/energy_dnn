@@ -25,8 +25,5 @@ class BasicModule(nn.Module):
         if name is None:
             prefix = 'checkpoints/' + self.model_name + '_'
             name = time.strftime(prefix + '%m%d_%H:%M:%S.pth')
-        t.save(self.state_dict(), name)
+        torch.save(self.state_dict(), name)
         return name
-
-    def get_optimizer(self, lr, weight_decay):
-        return torch.optim.Adam(self.parameters(), lr=lr, weight_decay=weight_decay)
