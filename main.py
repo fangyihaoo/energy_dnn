@@ -123,7 +123,7 @@ def train(**kwargs):
 
 def help():
     """
-    打印帮助的信息： python file.py help
+    Print out the help information： python file.py help
     """
     
     print("""
