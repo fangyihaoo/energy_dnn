@@ -12,7 +12,7 @@ class DefaultConfig(object):
     load_model_path = None
     #'checkpoints/model.pth' # path for pretrain model
     
-
+    method = 'adam'
     max_epoch = 50000 # number of epoch
     lr = 0.001 # initial learning rate
     lr_decay = 0.95 # when val_loss increase, lr = lr*lr_decay

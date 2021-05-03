@@ -14,7 +14,7 @@ def mesh2d(num: int) -> Tensor:
 
     x = torch.linspace(-1, 1, num)
     y = torch.linspace(-1, 1, num)
-    X, Y = torch.meshgrid(x1, x2)
+    X, Y = torch.meshgrid(x, y)
     Z = torch.cat((Y.flatten()[:, None], Y.T.flatten()[:, None]), dim=1)
 
     return Z

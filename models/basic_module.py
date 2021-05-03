@@ -26,4 +26,3 @@ class BasicModule(nn.Module):
             prefix = 'checkpoints/' + self.model_name + '_'
             name = time.strftime(prefix + '%m%d_%H:%M:%S.pt')
         torch.save(self.state_dict(), name)
-        return None

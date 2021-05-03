@@ -48,18 +48,21 @@ def train(**kwargs):
     
     # optimizer
     # we only apply L2 penalty on weight
-    weight_p, bias_p = [], []
-    for name, p in model.named_parameters():
-        if 'bias' in name:
-            bias_p += [p]
-        else:
-            weight_p += [p]
+    # weight_p, bias_p = [], []
+    # for name, p in model.named_parameters():
+    #     if 'bias' in name:
+    #         bias_p += [p]
+    #     else:
+    #         weight_p += [p]
 
-    op = Optim([
-        {'params': weight_p, 'weight_decay': opt.weight_decay},
-        {'params': bias_p, 'weight_decay':0}
-        ], opt)
-    
+    # op = Optim([
+    #     {'params': weight_p, 'weight_decay': opt.weight_decay},
+    #     {'params': bias_p, 'weight_decay':0}
+    #     ], opt)
+
+    # optimizer
+    # penalize all of the parameters
+    op = Optim(model.parameters(), opt)
     optimizer = op._makeOptimizer()
 
     #  meters
@@ -75,7 +78,7 @@ def train(**kwargs):
         datI = Poisson(device = device)
         datB = Poisson(num = 25, boundary = True, device = device)
 
-        datI_loader = DataLoader(datI, 100, shuffle=True) # make sure that the dataloder are the same len for datI and datB
+        datI_loader = DataLoader(datI, 100, shuffle=True) # make sure that the dataloders are the same len for datI and datB
         datB_loader = DataLoader(datB, 10, shuffle=True)
 
         for i, data in enumerate(zip(datI_loader, datB_loader)):

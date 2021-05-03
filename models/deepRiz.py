@@ -34,12 +34,13 @@ class ResNet(BasicModule):
         FClayer: int = 2,                                           # number of fully-connected layers in one residual block
         num_blocks: int = 4,                                        # number of residual blocks
         activation = nn.Tanh(),                                     # activation function
+        num_input: int = 2,                                         # dimension of input, in this case is 2 
         num_node: int = 10                                          # number of nodes in one fully-connected layer
     ) -> None:
         super(ResNet, self).__init__()
         self.num_blocks = num_blocks
         self.activation = activation
-        self.input = nn.Linear(2, num_node)
+        self.input = nn.Linear(num_input, num_node)     
         for i in range(self.num_blocks):
             setattr(self,f'ResiB{i}',ResBlock(num_node, FClayer, self.activation))
         self.output = nn.Linear(num_node, 1)
