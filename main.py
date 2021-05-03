@@ -3,6 +3,7 @@ import torch
 import models
 from data import Poisson
 from utils import Optim
+from utils import criterion
 from torch.utils.data import DataLoader
 from torchnet import meter
 from tqdm import tqdm
@@ -88,10 +89,8 @@ def train(**kwargs):
             loss = criterion(model, data[0], data[1])
             loss.backward()
             optimizer.step()
-            
-            
-            # meters update and visualize
-            loss_meter.add(loss.item())
+                    
+            loss_meter.add(loss.item())  # meters update
         
         # prediction error
         pred = model(grid)

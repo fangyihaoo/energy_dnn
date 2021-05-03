@@ -7,10 +7,10 @@ class DefaultConfig(object):
 
     model = 'ResNet'
 
-    test_data_root = './data/exact_sol'
-    #'./data/test1'  # path for test data
+    # test_data_root = './data/exact_sol'
+
     load_model_path = None
-    #'checkpoints/model.pth' # path for pretrain model
+    #'checkpoints/model.pth' # path for trained model
     
     method = 'adam'
     max_epoch = 50000 # number of epoch
