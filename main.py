@@ -107,7 +107,7 @@ def train(**kwargs):
         #     for param_group in optimizer.param_groups:
         #         param_group['lr'] = lr
         
-        log = 'Epoch: {:03d}, Loss: {:.4f}, Test: {:.4f}
+        log = 'Epoch: {:05d}, Loss: {:.6f}, Test: {:.6f}
         print(log.format(epoch, loss.item(), test_err))
 
         previous_loss = loss_meter.value()[0]
