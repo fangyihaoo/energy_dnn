@@ -107,7 +107,7 @@ def train(**kwargs):
                     previous_err = test_err
                     best_epoch = epoch
                     model.save()
-                    plot(pred)
+
         
         # update learning rate
         # if loss_meter.value()[0] > previous_loss:          
@@ -120,6 +120,24 @@ def train(**kwargs):
             print(log.format(epoch, loss_meter.value()[0], test_err, best_epoch))
 
 
+def make_plot(**kwargs):
+
+    opt._parse(kwargs)
+
+    # configure model
+    model = getattr(models, opt.model)().eval()
+    if opt.load_model_path:
+        model.load(opt.load_model_path)
+    model.to(opt.device)
+
+    gridpath = './data/exact_sol/poiss2dgrid.pt'
+    grid = torch.load(gridpath, map_location = device)
+
+    pred = model(grid)
+
+    plot(pred)
+
+    return None
 
 # @torch.no_grad()
 # def val(model,dataloader):
@@ -136,9 +154,10 @@ def help():
     
     print("""
     usage : python file.py <function> [--args=value]
-    <function> := train | help
+    <function> := train | make_plot | help
     example: 
             python {0} train --weight_decay='1e-5' --lr=0.01
+            python {0} make_plot --load_model_path='...'
             python {0} help
     avaiable args:""".format(__file__))
 
