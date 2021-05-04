@@ -120,20 +120,25 @@ def train(**kwargs):
             print(log.format(epoch, loss_meter.value()[0], test_err, best_epoch))
 
 
+# just for testing, need to be modified
 def make_plot(**kwargs):
 
     opt._parse(kwargs)
-
+    
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
     # configure model
     model = getattr(models, opt.model)().eval()
     if opt.load_model_path:
         model.load(opt.load_model_path)
-    model.to(opt.device)
+
 
     gridpath = './data/exact_sol/poiss2dgrid.pt'
-    grid = torch.load(gridpath, map_location = device)
-
-    pred = model(grid)
+    #grid = torch.load(gridpath, map_location = device)
+    grid = torch.load(gridpath)
+    
+    with torch.no_grad():
+        pred = model(grid)
 
     plot(pred)
 

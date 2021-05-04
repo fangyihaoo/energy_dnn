@@ -22,10 +22,10 @@ def mesh2d(num: int) -> Tensor:
 def poi2d(grid: Tensor) -> Tensor:
     '''
     Generate exact solution according to the following 2D poisson equation in the meshgrid
-    \laplacia u = 1,    u \in \Omega
+    \laplacia u = -1,    u \in \Omega
     u = 0,              u \in \partial \Omega (-1, 1) \times (-1, 1)
 
-    exact:  u = 1/4(x^2 + y^2 - 2)
+    exact:  u = -1/4(x^2 + y^2 - 2)
 
     input:  
     grid: location of the grid tensor

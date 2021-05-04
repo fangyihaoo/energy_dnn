@@ -2,9 +2,18 @@ from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
+
+
 def plot(pred):
+    '''
+    need to be modified to make it more general
+    '''
+    
     plt.figure()
-    pred = pred.cpu().numpy()
+    if pred.is_cuda:
+        pred = pred.to('cpu').numpy()
+    else:
+        pred = pred.numpy()
     pred = pred.reshape(1001, 1001)
     ax = plt.subplot(1, 1, 1)
     h = plt.imshow(pred, interpolation='nearest', cmap='rainbow',
