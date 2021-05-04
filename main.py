@@ -5,6 +5,7 @@ from data import Poisson
 from utils import Optim
 from utils import criterion
 from utils import weight_init
+from utils import plot
 from torch.utils.data import DataLoader
 from torchnet import meter
 from tqdm import tqdm
@@ -106,6 +107,7 @@ def train(**kwargs):
                     previous_err = test_err
                     best_epoch = epoch
                     model.save()
+                    plot(pred)
         
         # update learning rate
         # if loss_meter.value()[0] > previous_loss:          
