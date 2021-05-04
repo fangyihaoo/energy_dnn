@@ -33,7 +33,7 @@ def poi2d(grid: Tensor) -> Tensor:
     output: exact solution in Tensor form with dim = (num*num)
     '''
 
-    return (torch.sum(grid**2, dim = 1) - 2)/4
+    return -(torch.sum(grid**2, dim = 1) - 2)/4
 
 
 
@@ -41,6 +41,6 @@ def poi2d(grid: Tensor) -> Tensor:
 
 if __name__ == '__main__':
     Z = mesh2d(1001)
-    poi2d = poi2d(Z)
+    exact = poi2d(Z)
     torch.save(Z, '../data/exact_sol/poiss2dgrid.pt')
-    torch.save(poi2d, '../data/exact_sol/poiss2dexact.pt')
+    torch.save(exact, '../data/exact_sol/poiss2dexact.pt')

@@ -15,10 +15,7 @@ class Optim(object):
         self.nesterov = config.nesterov
 
     def _makeOptimizer(self):
-        if self.method == 'sgd':
-            return optim.SGD(self.params, lr = self.lr, weight_decay = self.weight_decay, momentum = self.momentum, nesterov = self.nesterov)
-
-        elif self.method == 'adagrad':
+        if self.method == 'adagrad':
             return optim.Adagrad(self.params, lr = self.lr, weight_decay = self.weight_decay)
 
         elif self.method == 'rmsprop':
@@ -26,6 +23,10 @@ class Optim(object):
 
         elif self.method == 'adam':
             return optim.Adam(self.params, lr=self.lr, weight_decay = self.weight_decay)
+        
+        # to use SGD, we need to modify the train part and dataset
+        # elif self.method == 'sgd':
+        #     return optim.SGD(self.params, lr = self.lr, weight_decay = self.weight_decay, momentum = self.momentum, nesterov = self.nesterov)
 
         else:
             raise RuntimeError("Invalid optim method: " + self.method)

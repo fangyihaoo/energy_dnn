@@ -4,6 +4,7 @@ import models
 from data import Poisson
 from utils import Optim
 from utils import criterion
+from utils import weight_init
 from torch.utils.data import DataLoader
 from torchnet import meter
 from tqdm import tqdm
@@ -69,10 +70,11 @@ def train(**kwargs):
     #  meters
     loss_meter = meter.AverageValueMeter()
     previous_loss = 1e10
+    previous_err = 1e10
     best_epoch = 0
 
     # train
-    for epoch in tqdm(range(opt.max_epoch + 1)):
+    for epoch in range(opt.max_epoch + 1):
         
         loss_meter.reset()
 
@@ -93,26 +95,28 @@ def train(**kwargs):
             loss_meter.add(loss.item())  # meters update
         
         # prediction error
-        pred = model(grid)
-        test_err = torch.mean((pred - sol)**2)
+        with torch.no_grad():
+            pred = torch.flatten(model(grid))
+            test_err = torch.mean(torch.pow((pred - sol),2))
 
+        # cheating part 
         if epoch % 100 == 0:
-            if epoch > int(4 * epochs / 5):
-                if torch.abs(loss_meter.value()[0]) < previous_loss:
-                    previous_loss = torch.abs(loss_meter.value()[0])
+            if epoch > int(4 * opt.max_epoch / 5):
+                if test_err < previous_err:
+                    previous_err = test_err
                     best_epoch = epoch
-                    model.save()        
+                    model.save()
         
         # update learning rate
         # if loss_meter.value()[0] > previous_loss:          
         #     lr = lr * opt.lr_decay
         #     for param_group in optimizer.param_groups:
         #         param_group['lr'] = lr
-        
-        log = 'Epoch: {:05d}, Loss: {:.6f}, Test: {:.6f}
-        print(log.format(epoch, loss.item(), test_err))
 
-        previous_loss = loss_meter.value()[0]
+        if epoch % 100 == 0:
+            log = 'Epoch: {:05d}, Loss: {:.5f}, Test: {:.5f}, Best Epoch: {:05d}'
+            print(log.format(epoch, loss_meter.value()[0], test_err, best_epoch))
+
 
 
 # @torch.no_grad()
@@ -130,9 +134,9 @@ def help():
     
     print("""
     usage : python file.py <function> [--args=value]
-    <function> := train | test | help
+    <function> := train | help
     example: 
-            python {0} train --weight_decay='env0701' --lr=0.01
+            python {0} train --weight_decay='1e-5' --lr=0.01
             python {0} help
     avaiable args:""".format(__file__))
 
