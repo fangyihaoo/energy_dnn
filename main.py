@@ -98,7 +98,7 @@ def train(**kwargs):
             for i , j in zip(model.parameters(), w0):
                 regularizer = regularizer + torch.sum(torch.pow((i - j),2)) # not sure whether inplace addition appropriate here
             
-            loss = loss + 0.001*regularizer
+            loss = loss + 10*regularizer
 
             loss.backward()
             optimizer.step()

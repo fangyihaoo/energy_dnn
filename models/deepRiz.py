@@ -48,7 +48,7 @@ class ResNet(BasicModule):
         
     def _forward_impl(self, x):
         x = self.input(x)
-        x = self.activation(x)
+        # x = self.activation(x)
         for i in range(self.num_blocks):
             x = getattr(self, f'ResiB{i}')(x)
         x = self.output(x)        
