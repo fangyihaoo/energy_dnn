@@ -16,7 +16,7 @@ class DefaultConfig(object):
     max_epoch = 50000 # number of epoch
     lr = 0.001 # initial learning rate
     lr_decay = 0.95 # when val_loss increase, lr = lr*lr_decay
-    weight_decay = 1e-4 # initial peanality for the L2
+    weight_decay = 0 # initial peanality for the L2
     momentum = 0.9 # Momentum for modified SGD
     nesterov = True # Nesterov momentum for SGD
     alpha = 0.99 # alpha for RMSProp
