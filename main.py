@@ -48,6 +48,9 @@ def train(**kwargs):
     model.to(device)
 
     model.apply(weight_init)
+
+
+    w0 = [torch.zeros_like(p.data) for p in model.parameters()]   # the initial value
     
     # optimizer
     # we only apply L2 penalty on weight
@@ -90,9 +93,18 @@ def train(**kwargs):
             # train model 
             optimizer.zero_grad()
             loss = criterion(model, data[0], data[1])
+
+            regularizer = torch.tensor(0.0)
+            for i , j in zip(model.parameters(), w0):
+                regularizer = regularizer + torch.sum(torch.pow((i - j),2)) # not sure whether inplace addition appropriate here
+            
+            loss = loss + 0.001*regularizer
+
             loss.backward()
             optimizer.step()
-                    
+
+            w0[:] = [i.data for i in model.parameters()]
+            
             loss_meter.add(loss.item())  # meters update
         
         # prediction error
@@ -106,7 +118,7 @@ def train(**kwargs):
                 if test_err < previous_err:
                     previous_err = test_err
                     best_epoch = epoch
-                    model.save()
+                    model.save(name = 'checkpoints/best.pt')
 
         
         # update learning rate

@@ -46,7 +46,7 @@ class ResNet(BasicModule):
         self.output = nn.Linear(num_node, 1)
 
         
-    def  _forward_impl(self, x):
+    def _forward_impl(self, x):
         x = self.input(x)
         x = self.activation(x)
         for i in range(self.num_blocks):
