@@ -74,7 +74,7 @@ def train(**kwargs):
     #  meters
     loss_meter = meter.AverageValueMeter()
     previous_loss = 1e10
-    previous_err = 1e10
+    # previous_err = 1e10
     best_epoch = 0
 
     # train
@@ -112,13 +112,21 @@ def train(**kwargs):
             pred = torch.flatten(model(grid))
             test_err = torch.mean(torch.pow((pred - sol),2))
 
-        # cheating part 
+        # save model with least abs loss
         if epoch % 100 == 0:
             if epoch > int(4 * opt.max_epoch / 5):
-                if test_err < previous_err:
-                    previous_err = test_err
+                if torch.abs(loss_meter.value()[0]) < best_loss:
+                    best_loss = torch.abs(loss_meter.value()[0])
                     best_epoch = epoch
-                    model.save(name = 'checkpoints/best.pt')
+                    model.save(name = 'new_best_deep_ritz1.pt')
+
+        # save model with least abs error
+        # if epoch % 100 == 0:
+        #     if epoch > int(4 * opt.max_epoch / 5):
+        #         if test_err < previous_err:
+        #             previous_err = test_err
+        #             best_epoch = epoch
+        #             model.save(name = 'checkpoints/best.pt')
 
         
         # update learning rate
