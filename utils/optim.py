@@ -22,7 +22,7 @@ class Optim(object):
             return optim.RMSProp(self.params, lr = self.lr, alpha = 0.9)
 
         elif self.method == 'adam':
-            return optim.Adam(self.params, lr=self.lr, weight_decay = self.weight_decay)
+            return optim.Adam(self.params, lr=self.lr)
         
         # to use SGD, we need to modify the train part and dataset
         # elif self.method == 'sgd':
