@@ -88,7 +88,7 @@ def train(**kwargs):
         datI_loader = DataLoader(datI, 100, shuffle=True) # make sure that the dataloders are the same len for datI and datB
         datB_loader = DataLoader(datB, 10, shuffle=True)
 
-        for i, data in enumerate(zip(datI_loader, datB_loader)):
+        for data in zip(datI_loader, datB_loader):
 
             # train model 
             optimizer.zero_grad()
@@ -102,10 +102,10 @@ def train(**kwargs):
 
             loss.backward()
             optimizer.step()
-
-            w0[:] = [i.data for i in model.parameters()]
             
             loss_meter.add(loss.item())  # meters update
+        
+        w0[:] = [i.data for i in model.parameters()]
         
         # prediction error
         with torch.no_grad():
