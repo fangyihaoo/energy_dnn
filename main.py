@@ -12,13 +12,6 @@ from tqdm import tqdm
 
 
 
-# # test function, no need for this model
-# @torch.no_grad() 
-# def test(**kwargs):
-#     pass
-
-
-
 # # export the ouput as csv file, no need for this model
 # def write_csv(results,file_name):
 #     import csv
