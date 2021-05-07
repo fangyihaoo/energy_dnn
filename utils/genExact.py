@@ -1,5 +1,4 @@
 import torch
-from numpy import np
 from torch import Tensor
 
 

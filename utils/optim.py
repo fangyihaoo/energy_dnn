@@ -10,7 +10,6 @@ class Optim(object):
         self.method = config.method
         self.lr = config.lr
         self.lr_decay = config.lr_decay
-        self.weight_decay = config.weight_decay
         self.momentum = config.momentum
         self.nesterov = config.nesterov
 
