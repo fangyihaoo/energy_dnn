@@ -29,6 +29,9 @@ from tqdm import tqdm
 
 
 def train(**kwargs):
+
+    torch.manual_seed(1000)
+
     opt._parse(kwargs)
 
     # setting device
@@ -39,6 +42,13 @@ def train(**kwargs):
     solpath = './data/exact_sol/poiss2dexact.pt'
     grid = torch.load(gridpath, map_location = device)
     sol = torch.load(solpath, map_location = device)
+
+    # validation data
+    Val_datI = Poisson(num = 4000, boundary = True, device = device)
+    Val_datB = Poisson(num = 100, boundary = True, device = device)
+    Val_set  = torch.cat((Val_datI.data, Val_datB.data), dim=0)
+    Val_sol  = torch.sin(Val_set[:,0])*torch.cos(Val_set[:,1])
+
 
 
     # configure model
@@ -67,14 +77,13 @@ def train(**kwargs):
     #     ], opt)
 
     # optimizer
-    # penalize all of the parameters
     op = Optim(model.parameters(), opt)
     optimizer = op._makeOptimizer()
 
     #  meters
     loss_meter = meter.AverageValueMeter()
-    previous_loss = 1e10
-    # previous_err = 1e10
+    # previous_loss = torch.tensor(10000)
+    previous_err = torch.tensor(10000)
     best_epoch = 0
 
     # train
@@ -107,26 +116,25 @@ def train(**kwargs):
         
         w0[:] = [i.data for i in model.parameters()]
         
-        # prediction error
-        with torch.no_grad():
-            pred = torch.flatten(model(grid))
-            test_err = torch.mean(torch.pow((pred - sol),2))
+
+        if epoch % 100 == 0:
+            val_err = val(model, Val_set, Val_sol)
+            test_err = val(model, grid, sol)
+            if val_err < previous_err:
+                previous_err = val_err
+                best_epoch = epoch
+                model.save(name = 'checkpoints/new_best_' + f'Tau{opt.tau}' + '.pt')
+            log = 'Epoch: {:05d}, Loss: {:.5f}, Val: {:.5f}, Test: {:.5f}, Best Epoch: {:05d}'
+            print(log.format(epoch, loss_meter.value()[0], val_err.item(),test_err.item(), best_epoch))
+
 
         # save model with least abs loss
-        if epoch % 100 == 0:
-            if epoch > int(4 * opt.max_epoch / 5):
-                if torch.abs(loss_meter.value()[0]) < best_loss:
-                    best_loss = torch.abs(loss_meter.value()[0])
-                    best_epoch = epoch
-                    model.save(name = 'new_best_' + f'Tau{opt.tau}' + '.pt')
-
-        # save model with least abs error
         # if epoch % 100 == 0:
         #     if epoch > int(4 * opt.max_epoch / 5):
-        #         if test_err < previous_err:
-        #             previous_err = test_err
+        #         if torch.abs(loss_meter.value()[0]) < best_loss:
+        #             best_loss = torch.abs(loss_meter.value()[0])
         #             best_epoch = epoch
-        #             model.save(name = 'checkpoints/best.pt')
+        #             model.save(name = 'checkpoints/new_best_' + f'Tau{opt.tau}' + '.pt')
 
         
         # update learning rate
@@ -135,9 +143,37 @@ def train(**kwargs):
         #     for param_group in optimizer.param_groups:
         #         param_group['lr'] = lr
 
-        if epoch % 100 == 0:
-            log = 'Epoch: {:05d}, Loss: {:.5f}, Test: {:.5f}, Best Epoch: {:05d}'
-            print(log.format(epoch, loss_meter.value()[0], test_err, best_epoch))
+        # if epoch % 100 == 0:
+        #     # prediction error
+        #     with torch.no_grad():
+        #         pred = torch.flatten(model(grid))
+        #         test_err = torch.mean(torch.pow((pred - sol),2))
+        #     log = 'Epoch: {:05d}, Loss: {:.5f}, Val: {:.5f}, Test: {:.5f}, Best Epoch: {:05d}'
+        #     print(log.format(epoch, loss_meter.value()[0], val_err.item(),test_err.item(), best_epoch))
+
+
+# validation function
+
+@torch.no_grad()
+def val(model, data, sol):
+    """
+    validation part
+    """
+    model.eval()
+    
+    pred = torch.flatten(model(data))
+
+    err  = torch.mean(torch.pow(pred - sol, 2))
+
+    model.train()
+
+    return err
+
+
+# # test function
+# @torch.no_grad() 
+# def test(model, data, sol):
+#     pass
 
 
 # just for testing, need to be modified

@@ -2,6 +2,7 @@ import torch
 from torch.utils.data import Dataset
 from pyDOE import lhs
 from numpy import pi
+import numpy as np
 
 
 # class Poisson(Dataset):
@@ -54,8 +55,8 @@ class Poisson(Dataset):
             self.data = self.data.to(device) 
 
         else:
-            lb = torch.tensor((0., -pi/2))
-            ran = torch.tensor((pi, pi))
+            lb = np.array([0., -pi/2])
+            ran = np.array([pi, pi])
             self.data = torch.from_numpy(ran*lhs(2, num) + lb).float().to(device)        # generate the interior points
         
     def __getitem__(self, index):
