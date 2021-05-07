@@ -98,7 +98,7 @@ def train(**kwargs):
             for i , j in zip(model.parameters(), w0):
                 regularizer = regularizer + torch.sum(torch.pow((i - j),2)) # not sure whether inplace addition appropriate here
             
-            loss = loss + 10*regularizer
+            loss = loss + opt.tau*regularizer
 
             loss.backward()
             optimizer.step()
@@ -118,7 +118,7 @@ def train(**kwargs):
                 if torch.abs(loss_meter.value()[0]) < best_loss:
                     best_loss = torch.abs(loss_meter.value()[0])
                     best_epoch = epoch
-                    model.save(name = 'new_best_deep_ritz1.pt')
+                    model.save(name = 'new_best_' + f'Tau{opt.tau}' + '.pt')
 
         # save model with least abs error
         # if epoch % 100 == 0:

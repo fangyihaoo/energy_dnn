@@ -16,10 +16,10 @@ class Optim(object):
 
     def _makeOptimizer(self):
         if self.method == 'adagrad':
-            return optim.Adagrad(self.params, lr = self.lr, weight_decay = self.weight_decay)
+            return optim.Adagrad(self.params, lr = self.lr)
 
         elif self.method == 'rmsprop':
-            return optim.RMSProp(self.params, lr = self.lr, alpha = 0.9, weight_decay = self.weight_decay)
+            return optim.RMSProp(self.params, lr = self.lr, alpha = 0.9)
 
         elif self.method == 'adam':
             return optim.Adam(self.params, lr=self.lr, weight_decay = self.weight_decay)
