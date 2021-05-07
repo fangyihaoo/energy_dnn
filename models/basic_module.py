@@ -12,11 +12,11 @@ class BasicModule(nn.Module):
         super(BasicModule,self).__init__()
         self.model_name=str(type(self)) # default name
 
-    def load(self, path):
+    def load(self, path, dev = torch.device( 'cpu')):
         """
         load the model at specific path
         """
-        self.load_state_dict(torch.load(path))
+        self.load_state_dict(torch.load(path, map_location=dev))
 
     def save(self, name=None):
         """

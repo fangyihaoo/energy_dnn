@@ -150,7 +150,7 @@ def make_plot(**kwargs):
     # configure model
     model = getattr(models, opt.model)().eval()
     if opt.load_model_path:
-        model.load(opt.load_model_path)
+        model.load(opt.load_model_path, dev = device)
 
 
     gridpath = './data/exact_sol/poiss2dgrid.pt'
