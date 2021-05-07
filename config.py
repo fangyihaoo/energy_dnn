@@ -14,7 +14,7 @@ class DefaultConfig(object):
     
     method = 'adam'
 
-    max_epoch = 50000 # number of epoch
+    max_epoch = 20000 # number of epoch
 
     lr = 0.001 # initial learning rate
 
