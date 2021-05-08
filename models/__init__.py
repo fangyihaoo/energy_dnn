@@ -1,1 +1,1 @@
-from .deepRiz import ResNet
+from .deepRiz import ResNet, Pinn

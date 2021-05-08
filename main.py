@@ -84,7 +84,7 @@ def train(**kwargs):
         
         loss_meter.reset()
 
-        datI = Poisson(device = device)
+        datI = Poisson(num = 100, boundary = False, device = device)
         datB = Poisson(num = 25, boundary = True, device = device)
 
         datI_loader = DataLoader(datI, 100, shuffle=True) # make sure that the dataloders are the same len for datI and datB
