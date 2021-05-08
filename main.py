@@ -37,10 +37,14 @@ def train(**kwargs):
     sol = torch.load(solpath, map_location = device)
 
     # validation data
-    Val_datI = Poisson(num = 40000, boundary = True, device = device)
-    Val_datB = Poisson(num = 1000, boundary = True, device = device)
-    Val_set  = torch.cat((Val_datI.data, Val_datB.data), dim=0)
-    Val_sol  = torch.sin(Val_set[:,0])*torch.cos(Val_set[:,1])
+    x = torch.linspace(0., pi, 300)
+    y = torch.linspace(-pi/2, pi/2, 300)
+    X, Y = torch.meshgrid(x, y)
+    Val_set = torch.cat((X.flatten()[:, None], Y.flatten()[:, None]), dim=1)
+    Val_sol = torch.sin(Val_set[:,0])*torch.cos(Val_set[:,1])
+    Val_set = Val_set.to(device)
+    Val_sol = Val_sol.to(device)
+
 
 
 
