@@ -61,10 +61,10 @@ def mesh2d(num: int) -> Tensor:
 def poi2d(grid: Tensor) -> Tensor:
     '''
     Generate exact solution according to the following 2D poisson equation in the meshgrid
-    \laplacia u = -1,    u \in \Omega
-    u = 0,              u \in \partial \Omega (-1, 1) \times (-1, 1)
+    \laplacia u = 2sin(x)cos(y),    u \in \Omega
+    u = 0,              u \in \partial \Omega (0, pi) \times (-pi/2, pi/2)
 
-    exact:  u = -1/4(x^2 + y^2 - 2)
+    exact:  u = sin(x)cos(y)
 
     input:  
     grid: location of the grid tensor

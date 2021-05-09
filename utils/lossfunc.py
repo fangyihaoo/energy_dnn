@@ -5,8 +5,8 @@ import torch
 def criterion(model, dat_i, dat_b):
     '''
     loss function for 2d Poisson equation
-    \laplacia u = 1,    u \in \Omega
-    u = 0,              u \in \partial \Omega (-1, 1) \times (-1, 1)
+    -\laplacia u = 2sin(x)cos(y),    u \in \Omega
+    u = 0,              u \in \partial \Omega (0, pi) \times (-pi/2, pi/2)
 
     '''
 

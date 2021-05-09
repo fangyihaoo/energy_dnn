@@ -6,6 +6,7 @@ from utils import Optim
 from utils import criterion
 from utils import weight_init
 from utils import plot
+from utils import seed_setup
 from torch.utils.data import DataLoader
 from torchnet import meter
 from tqdm import tqdm
@@ -22,8 +23,6 @@ from tqdm import tqdm
 
 
 def train(**kwargs):
-
-    torch.manual_seed(1000)
 
     opt._parse(kwargs)
 
@@ -45,7 +44,7 @@ def train(**kwargs):
     Val_set = Val_set.to(device)
     Val_sol = Val_sol.to(device)
 
-
+    seed_setup() # fix seed
 
 
     # configure model
