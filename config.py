@@ -14,9 +14,9 @@ class DefaultConfig(object):
     
     method = 'adam'
 
-    max_epoch = 5000 # number of epoch
+    max_epoch = 20000 # number of epoch
 
-    lr = 0.001 # initial learning rate
+    lr = 0.0001 # initial learning rate
 
     lr_decay = 0.95 # when val_loss increase, lr = lr*lr_decay
 
@@ -29,6 +29,8 @@ class DefaultConfig(object):
     alpha = 0.99 # alpha for RMSProp
     
     tau = 10 # 1/tau
+
+    ite = 100 # number of iteration
 
 
     def _parse(self, kwargs):

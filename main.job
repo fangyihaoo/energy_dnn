@@ -1,0 +1,10 @@
+#!/bin/csh
+#$ -M zhu4@nd.edu     # Email address for job notification
+#$ -m abe               # Send mail when job begins, ends and aborts
+#$ -q gpu             
+#$ -l gpu_card=1
+#$ -N deepritz
+
+module load python
+
+python mainPred.py train --tau=10

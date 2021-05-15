@@ -35,14 +35,14 @@ def train(**kwargs):
     grid = torch.load(gridpath, map_location = device)
     sol = torch.load(solpath, map_location = device)
 
-    # validation data
-    x = torch.linspace(0., pi, 300)
-    y = torch.linspace(-pi/2, pi/2, 300)
-    X, Y = torch.meshgrid(x, y)
-    Val_set = torch.cat((X.flatten()[:, None], Y.flatten()[:, None]), dim=1)
-    Val_sol = torch.sin(Val_set[:,0])*torch.cos(Val_set[:,1])
-    Val_set = Val_set.to(device)
-    Val_sol = Val_sol.to(device)
+    # # validation data
+    # x = torch.linspace(0., pi, 300)
+    # y = torch.linspace(-pi/2, pi/2, 300)
+    # X, Y = torch.meshgrid(x, y)
+    # Val_set = torch.cat((X.flatten()[:, None], Y.flatten()[:, None]), dim=1)
+    # Val_sol = torch.sin(Val_set[:,0])*torch.cos(Val_set[:,1])
+    # Val_set = Val_set.to(device)
+    # Val_sol = Val_sol.to(device)
 
     seed_setup() # fix seed
 
@@ -55,8 +55,6 @@ def train(**kwargs):
 
     model.apply(weight_init)
 
-
-    w0 = [torch.zeros_like(p.data) for p in model.parameters()]   # the initial value
     
     # optimizer
     # we only apply L2 penalty on weight
@@ -78,6 +76,12 @@ def train(**kwargs):
 
     #  meters
     loss_meter = meter.AverageValueMeter()
+
+    # regularization
+    if opt.tau:
+        w0 = [torch.zeros_like(p.data) for p in model.parameters()]   # the initial w0 value
+
+
     # previous_loss = torch.tensor(10000)
     previous_err = torch.tensor(10000)
     best_epoch = 0
@@ -99,18 +103,22 @@ def train(**kwargs):
             optimizer.zero_grad()
             loss = criterion(model, data[0], data[1])
 
-            regularizer = torch.tensor(0.0)
-            for i , j in zip(model.parameters(), w0):
-                regularizer = regularizer + torch.sum(torch.pow((i - j),2)) # not sure whether inplace addition appropriate here
-            
-            loss = loss + opt.tau*regularizer
+            if opt.tau:
+                regularizer = torch.tensor(0.0)
+                for i , j in zip(model.parameters(), w0):
+                    regularizer = regularizer + torch.sum(torch.pow((i - j),2)) # not sure whether inplace addition appropriate here
+                loss = loss + opt.tau*regularizer                
 
             loss.backward()
             optimizer.step()
             
             loss_meter.add(loss.item())  # meters update
+
+        # update w0
+        if opt.tau:
+            w0[:] = [i.data for i in model.parameters()]
         
-        w0[:] = [i.data for i in model.parameters()]
+        
         
 
         if epoch % 100 == 0:
@@ -122,6 +130,13 @@ def train(**kwargs):
                 model.save(name = 'checkpoints/new_best_' + f'Tau{opt.tau}' + '.pt')
             log = 'Epoch: {:05d}, Loss: {:.5f}, Val: {:.5f}, Test: {:.5f}, Best Epoch: {:05d}'
             print(log.format(epoch, torch.abs(torch.tensor(loss_meter.value()[0])), val_err.item(),test_err.item(), best_epoch))
+
+        if epoch % 100 == 0:
+            test_err = val(model, grid, sol)
+            if test_err < previous_err:
+                previous_err = test_err
+                best_epoch = epoch
+
 
 
         # save model with least abs loss
