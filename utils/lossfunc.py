@@ -1,4 +1,5 @@
 import torch
+from numpy import pi
 
 
 
@@ -9,7 +10,7 @@ def criterion(model, dat_i, dat_b):
     u = 0,              u \in \partial \Omega (0, pi) \times (-pi/2, pi/2)
 
     '''
-
+    
     g = dat_i.clone()
     g.requires_grad = True
     output_g = model(g)

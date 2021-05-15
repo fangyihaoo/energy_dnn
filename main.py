@@ -121,7 +121,7 @@ def train(**kwargs):
                 best_epoch = epoch
                 model.save(name = 'checkpoints/new_best_' + f'Tau{opt.tau}' + '.pt')
             log = 'Epoch: {:05d}, Loss: {:.5f}, Val: {:.5f}, Test: {:.5f}, Best Epoch: {:05d}'
-            print(log.format(epoch, loss_meter.value()[0], val_err.item(),test_err.item(), best_epoch))
+            print(log.format(epoch, torch.abs(torch.tensor(loss_meter.value()[0])), val_err.item(),test_err.item(), best_epoch))
 
 
         # save model with least abs loss
@@ -139,13 +139,6 @@ def train(**kwargs):
         #     for param_group in optimizer.param_groups:
         #         param_group['lr'] = lr
 
-        # if epoch % 100 == 0:
-        #     # prediction error
-        #     with torch.no_grad():
-        #         pred = torch.flatten(model(grid))
-        #         test_err = torch.mean(torch.pow((pred - sol),2))
-        #     log = 'Epoch: {:05d}, Loss: {:.5f}, Val: {:.5f}, Test: {:.5f}, Best Epoch: {:05d}'
-        #     print(log.format(epoch, loss_meter.value()[0], val_err.item(),test_err.item(), best_epoch))
 
 
 # validation function

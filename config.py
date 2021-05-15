@@ -43,7 +43,10 @@ class DefaultConfig(object):
         print('user config:')
         for k,v in self.__class__.__dict__.items():
             if not k.startswith('__'):
-                print(k,getattr(self,k))
+                if '_parse' in k:
+                    continue
+                else:
+                    print(k,getattr(self,k))
 
 
 opt = DefaultConfig()
