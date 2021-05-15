@@ -62,18 +62,18 @@ class ResNet(BasicModule):
 
 class Pinn(BasicModule):
     '''
-    Residule network
+    Fully connected network
     '''
 
     def __init__(self, 
         FClayer: int = 2,                                           # number of fully-connected layers
         activation = nn.Tanh(),                                     # activation function
-        num_layer: int = 5                                          # number of layers
+        num_layer: int = 5,                                          # number of layers
         num_input: int = 2,                                         # dimension of input, in this case is 2 
-        num_node: int = 20                                          # number of nodes in one fully-connected layer
+        num_node: int = 20,                                          # number of nodes in one fully-connected layer
         num_oupt: int = 1                                           # dimension of output, in this case is 1
     ) -> None:
-        super(PINN, self).__init__()
+        super(Pinn, self).__init__()
 
         self.input = nn.Linear(num_input, num_node)
         self.act = activation

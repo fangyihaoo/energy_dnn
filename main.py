@@ -196,12 +196,7 @@ def make_plot(**kwargs):
 
     return None
 
-# @torch.no_grad()
-# def val(model,dataloader):
-#     pass
-#     """
-#     no need for this model
-#     """
+
 
 
 def help():
