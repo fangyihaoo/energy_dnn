@@ -28,9 +28,9 @@ class DefaultConfig(object):
 
     alpha = 0.99 # alpha for RMSProp
     
-    tau = 10 # 1/tau
+    tau = None # 1/tau
 
-    ite = 100 # number of iteration
+    ite = 10 # number of iteration
 
 
     def _parse(self, kwargs):
