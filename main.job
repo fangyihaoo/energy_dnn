@@ -7,7 +7,6 @@
 
 module load python
 
-<<<<<<< HEAD
 python mainPred.py train --model='ResNet' --tau=0.1
 
 # echo ---------------------------------------------------------------------------
@@ -27,6 +26,3 @@ python mainPred.py train --model='ResNet' --tau=0.1
 # echo ---------------------------------------------------------------------------
 
 # python mainPred.py train --model='ResNet' --tau=100
-=======
-python mainPred.py train --tau=10
->>>>>>> 4938d1da3097bbf5bed5660b25b4049ac14c4146
