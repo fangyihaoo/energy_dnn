@@ -84,25 +84,6 @@ def poi2d(grid: Tensor) -> Tensor:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 if __name__ == '__main__':
     Z = mesh2d(1001)
     exact = poi2d(Z)

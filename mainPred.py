@@ -84,10 +84,10 @@ def train(**kwargs):
                 if test_err < previous_err:
                     previous_err = test_err
                     best_epoch = epoch
-        test_meter.add(previous_err)
+        test_meter.add(previous_err.to('cpu'))
         epoch_meter.add(best_epoch)
 
-    print(f'Mean MSE: {test_meter.value()[0]:.5f},  Std: {test_meter.value()[1]:.5f},  Mean Epoach: {epoch_meter.value()[0]: 05d}')
+    print(f'Mean MSE: {test_meter.value()[0]:.5f},  Std: {test_meter.value()[1]:.5f},  Mean Epoach: {epoch_meter.value()[0]: .5f}')
 
 
         
@@ -107,10 +107,11 @@ def val(model, data, sol):
     """
     model.eval()
     
+    # L2 relative error
     pred = torch.flatten(model(data))
 
-    err  = torch.mean(torch.pow(pred - sol, 2))
-
+    err  = torch.pow(torch.mean(torch.pow(pred - sol, 2)), 0.5)/torch.pow(torch.mean(torch.pow(sol, 2)), 0.5)
+    
     model.train()
 
     return err
