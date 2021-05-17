@@ -21,7 +21,7 @@ class ResBlock(nn.Module):
         residual = x
         out = self.block(x)
         out = out + residual                  # dont' put inplace addition here if inline activation
-        out = self.activate(out)
+        # out = self.activate(out)
         return out
         
         
