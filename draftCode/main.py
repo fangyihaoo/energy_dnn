@@ -34,36 +34,36 @@ def main():
     model = Burgers(2, 20, 1, 6, lb, ub,X_f_train, X_u_train, u_train, X_u_test, u_true)
     model.to(device)
 
-    'Optimizer LBFGS'
-    optimizer = torch.optim.LBFGS(model.parameters(), lr=0.1, max_iter = 500, max_eval = None, tolerance_grad = 1e-05, tolerance_change = 1e-09, history_size = 100, line_search_fn = 'strong_wolfe')
+    # 'Optimizer LBFGS'
+    # optimizer = torch.optim.LBFGS(model.parameters(), lr=0.1, max_iter = 500, max_eval = None, tolerance_grad = 1e-05, tolerance_change = 1e-09, history_size = 100, line_search_fn = 'strong_wolfe')
 
-    start_time = time.time()
-    optimizer.step(model.closure)
-    elapsed = time.time() - start_time  
+    # start_time = time.time()
+    # optimizer.step(model.closure)
+    # elapsed = time.time() - start_time  
 
-    print(f'Training time: {elapsed:.2f}')
+    # print(f'Training time: {elapsed:.2f}')
 
 
 
-    ' Model Accuracy '
-    error_vec, u_pred = PINN.test()
-    print(f'Test Error: {error_vec:.5f}')
+    # ' Model Accuracy '
+    # error_vec, u_pred = PINN.test()
+    # print(f'Test Error: {error_vec:.5f}')
 
 
     # 'Optimizer Adam'
 
-    # optimizer = torch.optim.Adam(model.parameters(), lr=0.001,betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001,betas=(0.9, 0.999), eps=1e-08, weight_decay=0, amsgrad=False)
 
-    # max_iter = 20000 # cause we are using full-batach so it's equivalent to epoach
+    max_iter = 20000 # cause we are using full-batach so it's equivalent to epoach
 
-    # for i in range(max_iter):
-    #     loss = model.loss(X_f_train, X_u_train, u_train, X_u_test, u_true)
-    #     optimizer.zero_grad()
-    #     loss.backward()
-    #     optimizer.step()
-    #     if i % (max_iter//10) == 0:
-    #         error_vec, _ = model.predict(X_u_test, u_true)
-    #         print(f'In iteration {i}, the loss is {loss} and the error is {error_vec}')
+    for i in range(max_iter):
+        loss = model.loss(X_f_train, X_u_train, u_train, X_u_test, u_true)
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        if i % (max_iter//10) == 0:
+            error_vec, _ = model.predict(X_u_test, u_true)
+            print(f'In iteration {i}, the loss is {loss} and the error is {error_vec}')
 
 
 if __name__ == "__main__":
