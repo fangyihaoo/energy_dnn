@@ -1,5 +1,6 @@
 /*.o*
 /data/exact_sol
+/*.job
 
 # General
 .DS_Store
