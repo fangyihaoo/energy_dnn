@@ -13,13 +13,6 @@ from tqdm import tqdm
 
 
 
-# # export the ouput as csv file, no need for this model
-# def write_csv(results,file_name):
-#     import csv
-#     with open(file_name,'w') as f:
-#         writer = csv.writer(f)
-#         writer.writerow(['test_err'])
-#         writer.writerows(results)
 
 
 def train(**kwargs):
@@ -35,14 +28,7 @@ def train(**kwargs):
     grid = torch.load(gridpath, map_location = device)
     sol = torch.load(solpath, map_location = device)
 
-    # # validation data
-    # x = torch.linspace(0., pi, 300)
-    # y = torch.linspace(-pi/2, pi/2, 300)
-    # X, Y = torch.meshgrid(x, y)
-    # Val_set = torch.cat((X.flatten()[:, None], Y.flatten()[:, None]), dim=1)
-    # Val_sol = torch.sin(Val_set[:,0])*torch.cos(Val_set[:,1])
-    # Val_set = Val_set.to(device)
-    # Val_sol = Val_sol.to(device)
+
 
     seed_setup() # fix seed
 
@@ -121,22 +107,23 @@ def train(**kwargs):
         
         
 
-        if epoch % 100 == 0:
-            val_err = val(model, Val_set, Val_sol)
-            test_err = val(model, grid, sol)
-            if val_err < previous_err:
-                previous_err = val_err
-                best_epoch = epoch
-                model.save(name = 'checkpoints/new_best_' + f'Tau{opt.tau}' + '.pt')
-            log = 'Epoch: {:05d}, Loss: {:.5f}, Val: {:.5f}, Test: {:.5f}, Best Epoch: {:05d}'
-            print(log.format(epoch, torch.abs(torch.tensor(loss_meter.value()[0])), val_err.item(),test_err.item(), best_epoch))
+        # if epoch % 100 == 0:
+        #     val_err = val(model, Val_set, Val_sol)
+        #     test_err = val(model, grid, sol)
+        #     if val_err < previous_err:
+        #         previous_err = val_err
+        #         best_epoch = epoch
+        #         model.save(name = 'checkpoints/new_best_' + f'Tau{opt.tau}' + '.pt')
+        #     log = 'Epoch: {:05d}, Loss: {:.5f}, Val: {:.5f}, Test: {:.5f}, Best Epoch: {:05d}'
+        #     print(log.format(epoch, torch.abs(torch.tensor(loss_meter.value()[0])), val_err.item(),test_err.item(), best_epoch))
 
         if epoch % 100 == 0:
             test_err = val(model, grid, sol)
             if test_err < previous_err:
                 previous_err = test_err
                 best_epoch = epoch
-
+            log = 'Epoch: {:05d}, Loss: {:.5f}, Test: {:.5f}, Best Epoch: {:05d}'
+            print(log.format(epoch, torch.abs(torch.tensor(loss_meter.value()[0])), test_err.item(), best_epoch))
 
 
         # save model with least abs loss
@@ -173,11 +160,6 @@ def val(model, data, sol):
 
     return err
 
-
-# # test function
-# @torch.no_grad() 
-# def test(model, data, sol):
-#     pass
 
 
 # just for testing, need to be modified

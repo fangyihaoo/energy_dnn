@@ -14,7 +14,7 @@ class DefaultConfig(object):
     
     method = 'adam'
 
-    max_epoch = 5000 # number of epoch
+    max_epoch = 50000 # number of epoch
 
     lr = 0.0001 # initial learning rate
 
@@ -30,7 +30,7 @@ class DefaultConfig(object):
     
     tau = None # 1/tau
 
-    ite = 10 # number of iteration
+    ite = 3 # number of iteration
 
 
     def _parse(self, kwargs):

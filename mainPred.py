@@ -87,7 +87,7 @@ def train(**kwargs):
         test_meter.add(previous_err.to('cpu'))
         epoch_meter.add(best_epoch)
 
-    print(f'Mean MSE: {test_meter.value()[0]:.5f},  Std: {test_meter.value()[1]:.5f},  Mean Epoach: {epoch_meter.value()[0]: .5f}')
+    print(f'L2 relative error: {test_meter.value()[0]:.5f},  Std: {test_meter.value()[1]:.5f},  Mean Epoach: {epoch_meter.value()[0]: .5f}')
 
 
         
