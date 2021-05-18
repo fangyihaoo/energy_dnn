@@ -87,7 +87,7 @@ def train(**kwargs):
 
             # train model 
             optimizer.zero_grad()
-            loss = criterion(model, data[0], data[1])
+            loss = criterion(model, data[0], data[1], opt.loss)
 
             if opt.tau:
                 regularizer = torch.tensor(0.0)

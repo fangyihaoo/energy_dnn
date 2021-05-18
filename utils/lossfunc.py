@@ -9,8 +9,8 @@ u = 0,              u \in \partial \Omega (0, pi) \times (-pi/2, pi/2)
 
 '''
 
-def criterion(model, dat_i, dat_b):
-    if model.__class__.__name__  == 'ResNet':
+def criterion(model, dat_i, dat_b, los = 'DRM'):
+    if los  == 'DRM':
 
         g = dat_i.clone()
         g.requires_grad = True
@@ -25,7 +25,7 @@ def criterion(model, dat_i, dat_b):
 
         return loss_i + 500*loss_b
 
-    elif model.__class__.__name__  == 'Pinn':
+    elif los  == 'DGM':
 
         g = dat_i.clone()
         g.requires_grad = True
