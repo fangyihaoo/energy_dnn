@@ -78,10 +78,10 @@ def train(**kwargs):
         loss_meter.reset()
 
         datI = Poisson(num = 1000, boundary = False, device = device)
-        datB = Poisson(num = 25, boundary = True, device = device)
+        datB = Poisson(num = 100, boundary = True, device = device)
 
         datI_loader = DataLoader(datI, 100, shuffle=True) # make sure that the dataloders are the same len for datI and datB
-        datB_loader = DataLoader(datB, 10, shuffle=True)
+        datB_loader = DataLoader(datB, 40, shuffle=True)
 
         for data in zip(datI_loader, datB_loader):
 

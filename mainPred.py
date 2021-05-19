@@ -67,7 +67,7 @@ def train(**kwargs):
                 loss = criterion(model, data[0], data[1], opt.loss)
 
                 if opt.tau:
-                    regularizer = torch.tensor(0.0)
+                    regularizer = torch.tensor(0.0, device = device)
                     for i , j in zip(model.parameters(), w0):
                         regularizer += torch.sum(torch.pow((i - j),2)) 
                     loss += opt.tau*regularizer                
