@@ -7,7 +7,7 @@
 
 module load python
 
-python mainPred.py train --model='ResNet' --tau=10 --loss='DGM'
+python mainPlot.py train --model='ResNet' --tau=10 --loss='DRM'
 
 echo ---------------------------------------------------------------------------
 echo ---------------------------------------------------------------------------
