@@ -77,7 +77,7 @@ def train(**kwargs):
         
         loss_meter.reset()
 
-        datI = Poisson(num = 100, boundary = False, device = device)
+        datI = Poisson(num = 1000, boundary = False, device = device)
         datB = Poisson(num = 25, boundary = True, device = device)
 
         datI_loader = DataLoader(datI, 100, shuffle=True) # make sure that the dataloders are the same len for datI and datB
@@ -152,9 +152,14 @@ def val(model, data, sol):
     """
     model.eval()
     
+    # pred = torch.flatten(model(data))
+
+    # err  = torch.mean(torch.pow(pred - sol, 2))
+
+    # L2 relative error
     pred = torch.flatten(model(data))
 
-    err  = torch.mean(torch.pow(pred - sol, 2))
+    err  = torch.pow(torch.mean(torch.pow(pred - sol, 2)), 0.5)/torch.pow(torch.mean(torch.pow(sol, 2)), 0.5)
 
     model.train()
 
