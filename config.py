@@ -30,7 +30,7 @@ class DefaultConfig(object):
     
     tau = None # 1/tau
 
-    ite = 3 # number of iteration
+    ite = 2 # number of iteration
 
 
     def _parse(self, kwargs):

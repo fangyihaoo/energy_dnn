@@ -7,16 +7,10 @@
 
 module load python
 
-python mainPred.py train --model='ResNet' --loss='DGM'
+python mainPred.py train --model='ResNet' --tau=10 --loss='DRM'
 
 echo ---------------------------------------------------------------------------
 echo ---------------------------------------------------------------------------
 echo ---------------------------------------------------------------------------
 
-python mainPred.py train --model='ResNet' --tau=10 --loss='DGM'
-
-echo ---------------------------------------------------------------------------
-echo ---------------------------------------------------------------------------
-echo ---------------------------------------------------------------------------
-
-python mainPred.py train --model='ResNet' --tau=100 --loss='DGM'
+# python mainPred.py train --model='ResNet' --tau=10 --loss='DGM'

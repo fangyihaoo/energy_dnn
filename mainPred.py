@@ -69,8 +69,8 @@ def train(**kwargs):
                 if opt.tau:
                     regularizer = torch.tensor(0.0)
                     for i , j in zip(model.parameters(), w0):
-                        regularizer = regularizer + torch.sum(torch.pow((i - j),2)) # not sure whether inplace addition appropriate here
-                    loss = loss + opt.tau*regularizer                
+                        regularizer += torch.sum(torch.pow((i - j),2)) 
+                    loss += opt.tau*regularizer                
 
                 loss.backward()
                 optimizer.step()
