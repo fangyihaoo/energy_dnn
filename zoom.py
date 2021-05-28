@@ -12,6 +12,14 @@ from torchnet import meter
 from tqdm import tqdm
 
 
+# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# gridpath = './data/exact_sol/poiss2dgrid.pt'
+# solpath = './data/exact_sol/poiss2dexact.pt'
+# grid = torch.load(gridpath, map_location = device)
+# sol = torch.load(solpath, map_location = device)
+
+# print(torch.pow(torch.mean(torch.pow(sol, 2)),0.5))
+
 
 
 
@@ -30,7 +38,7 @@ def train(**kwargs):
 
 
 
-    seed_setup() # fix seed
+    # seed_setup() # fix seed
 
 
     # configure model
@@ -41,20 +49,6 @@ def train(**kwargs):
 
     model.apply(weight_init)
 
-    
-    # optimizer
-    # we only apply L2 penalty on weight
-    # weight_p, bias_p = [], []
-    # for name, p in model.named_parameters():
-    #     if 'bias' in name:
-    #         bias_p += [p]
-    #     else:
-    #         weight_p += [p]
-
-    # op = Optim([
-    #     {'params': weight_p, 'weight_decay': opt.weight_decay},
-    #     {'params': bias_p, 'weight_decay':0}
-    #     ], opt)
 
     # optimizer
     op = Optim(model.parameters(), opt)
@@ -159,7 +153,7 @@ def val(model, data, sol):
     # L2 relative error
     pred = torch.flatten(model(data))
 
-    err  = torch.pow(torch.mean(torch.pow(pred - sol, 2))/torch.mean(torch.pow(sol, 2)), 0.5)
+    err = torch.pow(torch.mean(torch.pow(pred - sol, 2))/torch.mean(torch.pow(sol, 2)), 0.5)
 
     model.train()
 
@@ -167,50 +161,6 @@ def val(model, data, sol):
 
 
 
-# just for testing, need to be modified
-def make_plot(**kwargs):
-
-    opt._parse(kwargs)
-    
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    
-    # configure model
-    model = getattr(models, opt.model)().eval()
-    if opt.load_model_path:
-        model.load(opt.load_model_path, dev = device)
-
-
-    gridpath = './data/exact_sol/poiss2dgrid.pt'
-    #grid = torch.load(gridpath, map_location = device)
-    grid = torch.load(gridpath)
-    
-    with torch.no_grad():
-        pred = model(grid)
-
-    plot(pred)
-
-    return None
-
-
-
-
-def help():
-    """
-    Print out the help information： python file.py help
-    """
-    
-    print("""
-    usage : python file.py <function> [--args=value]
-    <function> := train | make_plot | help
-    example: 
-            python {0} train --weight_decay='1e-5' --lr=0.01
-            python {0} make_plot --load_model_path='...'
-            python {0} help
-    avaiable args:""".format(__file__))
-
-    from inspect import getsource
-    source = (getsource(opt.__class__))
-    print(source)
 
 if __name__=='__main__':
     import fire

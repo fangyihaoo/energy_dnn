@@ -110,7 +110,7 @@ def val(model, data, sol):
     # L2 relative error
     pred = torch.flatten(model(data))
 
-    err  = torch.pow(torch.mean(torch.pow(pred - sol, 2)), 0.5)/torch.pow(torch.mean(torch.pow(sol, 2)), 0.5)
+    err  = torch.pow(torch.mean(torch.pow(pred - sol, 2))/torch.mean(torch.pow(sol, 2)), 0.5)
     
     model.train()
 
