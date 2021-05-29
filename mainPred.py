@@ -67,7 +67,7 @@ def train(**kwargs):
             for data in zip(datI_loader, datB_loader):
                 # train model 
                 optimizer.zero_grad()
-                loss = criterion(model, data[0], data[1], opt.loss)
+                loss = PoiLoss(model, data[0], data[1])
                 if opt.tau != 0:
                     regularizer = 0
                     for i , j in zip(model.parameters(), w0):
