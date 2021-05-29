@@ -7,10 +7,4 @@
 
 module load python
 
-python mainPlot.py train --model='ResNet'
-
-echo ---------------------------------------------------------------------------
-echo ---------------------------------------------------------------------------
-echo ---------------------------------------------------------------------------
-
-# python mainPred.py train --model='ResNet' --tau=10 --loss='DGM'
+python mainPlot.py train --model='ResNet' --max_epoch=5000 --step_size=1000 --tau=10

@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
-import time
+# import time
+import os.path as osp
 
 
 class BasicModule(nn.Module):
@@ -18,11 +19,14 @@ class BasicModule(nn.Module):
         """
         self.load_state_dict(torch.load(path, map_location=dev))
 
-    def save(self, name=None):
+    def save(self, name: str = None):
         """
         save the model with the default name
         """
+        path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'checkpoints', '')    
         if name is None:
-            prefix = 'checkpoints/' + self.model_name + '_'
-            name = time.strftime(prefix + '%m%d_%H:%M:%S.pt')
-        torch.save(self.state_dict(), name)
+            path += self.model_name + '.pt'
+            # name = time.strftime(prefix + '%m%d_%H:%M:%S.pt')
+        else:
+             path += name
+        torch.save(self.state_dict(), path)

@@ -1,1 +1,1 @@
-from .model import ResNet, Pinn
+from .model import ResNet, FullNet

@@ -7,28 +7,41 @@ class DefaultConfig(object):
 
     model = 'ResNet'
 
-    loss = 'DRM'  # 'DGM'
+    FClayer = 2
+
+    num_blocks = 3
+
+    num_input = 2
+
+    num_oupt = 1
+
+    num_node = 10
+
+    act = 'tanh'  # tanh,  relu,  sigmoid,  leakyrelu
 
     load_model_path = None
-    #'checkpoints/model.pth' # path for trained model
+    
+    exact = 'poiss2dexact.pt'
+
+    grid = 'poiss2dgrid.pt'
     
     method = 'adam'
 
-    max_epoch = 5000 # number of epoch
+    max_epoch = 20000 # number of epoch
 
-    lr = 0.0001 # initial learning rate
+    lr = 0.01 # initial learning rate
 
-    lr_decay = 0.95 # when val_loss increase, lr = lr*lr_decay
+    lr_decay = 0.5 # lr = lr*lr_decay
 
-    # weight_decay = 0 # initial peanality for the L2
+    step_size = 4000
 
-    momentum = 0.9 # Momentum for modified SGD
+    # momentum = 0.9 # Momentum for modified SGD
 
-    nesterov = True # Nesterov momentum for SGD
+    # nesterov = True # Nesterov momentum for SGD
 
-    alpha = 0.99 # alpha for RMSProp
+    # alpha = 0.99 # alpha for RMSProp
     
-    tau = None # 1/tau
+    tau = 0 # 1/tau
 
     ite = 2 # number of iteration
 
