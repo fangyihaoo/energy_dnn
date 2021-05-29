@@ -143,15 +143,16 @@ def help():
     print("""
     usage : python file.py <function> [--args=value]
     <function> := train | make_plot | help
-    example: 
+    Example: 
             python {0} train --lr=1e-5
             python {0} make_plot --load_model_path='...'
             python {0} help
-    avaiable args:""".format(__file__))
 
-    from inspect import getsource
-    source = (getsource(opt.__class__))
-    print(source)
+    Avaiable args: please refer to config.py""".format(__file__))
+
+    # from inspect import getsource
+    # source = (getsource(opt.__class__))
+    # print(source)
 
 if __name__=='__main__':
     import fire
