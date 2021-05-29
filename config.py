@@ -7,6 +7,8 @@ class DefaultConfig(object):
 
     model = 'ResNet'
 
+    functional = 'poi'  # 'poi': PoiLoss   'allen' AllenCahnLoss
+
     FClayer = 2
 
     num_blocks = 3

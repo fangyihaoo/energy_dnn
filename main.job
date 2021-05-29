@@ -7,4 +7,4 @@
 
 module load python
 
-python mainPlot.py train --model='ResNet' --max_epoch=5000 --step_size=1000 --tau=10
+python mainPlot.py train --model='ResNet' --functional='allen' --max_epoch=5000 --step_size=1000

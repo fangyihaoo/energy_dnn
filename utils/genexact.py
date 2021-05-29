@@ -72,7 +72,10 @@ def allen2d(grid: Tensor) -> Tensor:
 
 
 if __name__ == '__main__':
-    Z = mesh2d(201, (0., pi), (-pi/2, pi/2))                  # poisson 2d
-    exact = poi2d(Z)
-    torch.save(Z, '../data/exact_sol/poiss2dgrid.pt')
-    torch.save(exact, '../data/exact_sol/poiss2dexact.pt')
+    # Z = mesh2d(201, (0., pi), (-pi/2, pi/2))                  # poisson 2d
+    # exact = poi2d(Z)
+    # torch.save(Z, '../data/exact_sol/poiss2dgrid.pt')
+    # torch.save(exact, '../data/exact_sol/poiss2dexact.pt')
+
+    Z = mesh2d(201, (0., 1), (0, 1))
+    torch.save(Z, '../data/exact_sol/allen2dgrid.pt')

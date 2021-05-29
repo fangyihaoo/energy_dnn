@@ -34,9 +34,9 @@ def AllenCahnLoss(model, dat_i, dat_b):
     dat_i.requires_grad = True
     output_i = model(dat_i)
     output_b = model(dat_b)
-    ux = torch.autograd.grad(outputs = output_i, inputs = g, grad_outputs = torch.ones_like(output_i), retain_graph=True, create_graph=True)[0]
+    ux = torch.autograd.grad(outputs = output_i, inputs = dat_i, grad_outputs = torch.ones_like(output_i), retain_graph=True, create_graph=True)[0]
 
-    loss_i =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True) + 0.25*torch.pow(torch.pow(output_i, 2) - 1., 2))
+    loss_i =  torch.mean(50 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True) + 0.25*torch.pow(torch.pow(output_i, 2) - 1, 2))
     
     loss_b = torch.mean(torch.pow((output_b[torch.logical_or(dat_b[:,0] == 1., dat_b[:,0] == 0),:]  - 1), 2))
     loss_b += torch.mean(torch.pow((output_b[torch.logical_or(dat_b[:,1] == 1., dat_b[:,1] == 0),:]  + 1), 2))

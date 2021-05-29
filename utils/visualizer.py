@@ -15,11 +15,9 @@ def plot(pred):
         pred = pred.to('cpu').numpy()
     else:
         pred = pred.numpy()
-    pred = pred.reshape(1001, 1001)
+    pred = pred.reshape(201, 201)
     ax = plt.subplot(1, 1, 1)
-    h = plt.imshow(pred, interpolation='nearest', cmap='rainbow',
-                    extent=[0, pi, -2./pi, 2./pi],
-                    origin='lower', aspect='auto')
+    h = plt.imshow(pred, interpolation='nearest', cmap='rainbow',extent=[0, 1, 0, 1],origin='lower', aspect='auto')
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)
     plt.colorbar(h, cax=cax)

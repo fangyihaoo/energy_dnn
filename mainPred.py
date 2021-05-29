@@ -2,16 +2,18 @@ import torch
 import torch.nn as nn
 from torch.optim.lr_scheduler import StepLR 
 import models
-from data import Poisson
+from data import Poisson, AllenCahn
 from utils import Optim
-from utils import PoiLoss
+from utils import PoiLoss, AllenCahnLoss
 from utils import weight_init
+from utils import plot
 from torch.utils.data import DataLoader
 from torchnet import meter
 import os.path as osp
 from typing import Callable
 from torch import Tensor
 from config import opt
+
 
 def train(**kwargs):
 
@@ -24,13 +26,17 @@ def train(**kwargs):
     exact = torch.load(exactpath, map_location = device)
 
     # configure 
-    FUNCTION_MAP = {'relu' : nn.ReLU(),
+    DATASET_MAP = {'poi':Poisson,
+                    'allen':AllenCahn}
+    LOSS_MAP = {'poi':PoiLoss,
+                'allen': AllenCahnLoss}
+    ACTIVATION_MAP = {'relu' : nn.ReLU(),
                     'tanh' : nn.Tanh(),
                     'sigmoid': nn.Sigmoid(),
                     'leakyrelu': nn.LeakyReLU()}
     keys = {'FClayer':opt.FClayer, 
             'num_blocks':opt.num_blocks,
-            'activation':FUNCTION_MAP[opt.act],
+            'activation':ACTIVATION_MAP[opt.act],
             'num_input':opt.num_input,
             'num_output':opt.num_oupt,
             'num_node':opt.num_node}
@@ -59,8 +65,8 @@ def train(**kwargs):
         # train
         for epoch in range(opt.max_epoch + 1):
             
-            datI = Poisson(num = 1000, boundary = False, device = device)
-            datB = Poisson(num = 100, boundary = True, device = device)
+            datI = DATASET_MAP[opt.functional](num = 1000, boundary = False, device = device)
+            datB = DATASET_MAP[opt.functional](num = 250, boundary = True, device = device)
             datI_loader = DataLoader(datI, 100, shuffle=True) # make sure that the dataloders are the same len for datI and datB
             datB_loader = DataLoader(datB, 10, shuffle=True)
 
@@ -72,7 +78,8 @@ def train(**kwargs):
                     regularizer = 0
                     for i , j in zip(model.parameters(), w0):
                         regularizer += torch.sum(torch.pow((i - j),2))
-                    loss += opt.tau*regularizer                  
+                    loss += opt.tau*regularizer   
+                                   
                 loss.backward()
                 optimizer.step()
             scheduler.step()
