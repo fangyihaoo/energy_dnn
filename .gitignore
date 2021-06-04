@@ -5,6 +5,8 @@
 /log/loss
 /log/evolution
 /draftCode
+/result/.gitkeep
+
 
 # General
 .DS_Store
@@ -460,3 +462,4 @@ TSWLatexianTemp*
 #*Notes.bib
 
 **/.DS_Store
+result/.gitkeep
