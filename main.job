@@ -8,4 +8,4 @@
 module load python
 
 
-python mainAllen.py train --model='ResNet' --functional='allen' --tau=10 --max_epoch=50000 --step_size=15000 --act='relu'
+python main.py train --model='ResNet' --functional='allenw' 

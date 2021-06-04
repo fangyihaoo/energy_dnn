@@ -37,28 +37,34 @@ def AllenCahn2dLoss(model, dat_i, dat_b):
     ux = torch.autograd.grad(outputs = output_i, inputs = dat_i, grad_outputs = torch.ones_like(output_i), retain_graph=True, create_graph=True)[0]
 
     loss_i =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True) + 25*torch.pow(torch.pow(output_i, 2) - 1, 2))
-    
     loss_b = torch.mean(torch.pow((output_b[torch.logical_or(dat_b[:,0] == 1., dat_b[:,0] == 0),:]  + 1), 2))
     loss_b += torch.mean(torch.pow((output_b[torch.logical_or(dat_b[:,1] == 1., dat_b[:,1] == 0),:]  - 1), 2))
 
     return loss_i + 500*loss_b
 
 
-def AllenCahnW(model, dat_i, dat_b):
-  r = 0.25
-  A = (1 - pi*(r**2))*(-1) + pi*(r**2)
 
-  dat_i.requires_grad = True
-  output_i = model(dat_i)
-  output_b = model(dat_b)
-  ux = torch.autograd.grad(outputs = output_i, inputs = dat_i, grad_outputs = torch.ones_like(output_i), retain_graph=True, create_graph=True)[0]
+def AllenCahnW(model, dat_i, dat_b, previous):
 
-  loss_i =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True) + 250*torch.pow(torch.pow(output_i, 2) - 1, 2))
-  loss_b = torch.mean(torch.pow((output_b + 1), 2))
-  loss_c = 1000*torch.pow((torch.mean(output_i) - A), 2)
+    r"""
+    \int 0.5*|\nabla \phi|^2 + 0.25*(\phi^2 - 1)^2/epislon^2 dx + W*(\int\phidx - A)^2
+    r = 0.25
+    A = (1 - pi*(r**2))*(-1) + pi*(r**2)
+    W = 1000
+    """
+    r = 0.25
+    A = (1 - pi*(r**2))*(-1) + pi*(r**2)
+    dat_i.requires_grad = True
+    output_i = model(dat_i)
+    output_b = model(dat_b)
+    ux = torch.autograd.grad(outputs = output_i, inputs = dat_i, grad_outputs = torch.ones_like(output_i), retain_graph=True, create_graph=True)[0]
 
-  return loss_i + 500*loss_b + loss_c
+    loss_i =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True) + 250*torch.pow(torch.pow(output_i, 2) - 1, 2)) 
+    loss_b = torch.mean(torch.pow((output_b + 1), 2))
+    loss_c = 1000*torch.pow((torch.mean(output_i) - A), 2)
+    loss_i += 100*torch.mean(torch.pow(output_i - previous, 2))
 
+    return loss_i + 500*loss_b + loss_c 
 
 
 def AllenCahnLB(model, dat_i, dat_b):
@@ -67,19 +73,15 @@ def AllenCahnLB(model, dat_i, dat_b):
     (-1, 1)\times(-1, 1)
     """
     dat_i.requires_grad = True
-
     output_i = model(dat_i)
     output_b = model(dat_b)
-
     ux = torch.autograd.grad(outputs = output_i, inputs = dat_i, grad_outputs = torch.ones_like(output_i), retain_graph=True, create_graph=True)[0]
     uxx = torch.autograd.grad(outputs = ux, inputs = dat_i, grad_outputs = torch.ones(ux.size()), create_graph=True)[0]
 
     loss_i = 0.5*torch.pow(torch.sum(uxx, dim=1, keepdim=True) + output_i, 2)
     loss_i += 0.5*torch.pow(output_i, 2) + torch.pow(output_i, 4)/4
     loss_i = loss_i.mean()/4
-
     loss_i += torch.mean(output_i)
-
     loss_b = torch.mean(torch.pow((output_b  + 1), 2))
 
     return loss_i + 500*loss_b

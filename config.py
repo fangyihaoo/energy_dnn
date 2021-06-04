@@ -7,7 +7,7 @@ class DefaultConfig(object):
 
     model = 'ResNet'
 
-    functional = 'poi'  # 'poi': PoiLoss   'allen' AllenCahnLoss
+    functional = 'allenw'  # 'poi': PoiLoss   'allen' AllenCahnLoss
 
     FClayer = 2
 
@@ -22,6 +22,8 @@ class DefaultConfig(object):
     act = 'tanh'  # tanh,  relu,  sigmoid,  leakyrelu
 
     load_model_path = None
+
+    pretrain = 'init.pt'
     
     exact = 'poiss2dexact.pt'
 
@@ -29,9 +31,9 @@ class DefaultConfig(object):
     
     method = 'adam'
 
-    max_epoch = 3000 # number of epoch
+    max_epoch = 150 # number of epoch
 
-    lr = 0.001 # initial learning rate
+    lr = 0.0005 # initial learning rate
 
     lr_decay = 0.5 # lr = lr*lr_decay
 

@@ -18,21 +18,22 @@ from config import opt
 
 
 def train(**kwargs):
-
-    # load the exact solution
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    # load the exact solution if exist
     opt._parse(kwargs)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    exactpath1 = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', 'allen2dexact1.pt')
-    exactpath2 = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', 'allen2dexact2.pt')
-    gridpath = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', 'allen2dgrid.pt')
-    grid = torch.load(gridpath, map_location = device)
-    exact1 = torch.load(exactpath1, map_location = device)
-    exact2 = torch.load(exactpath2, map_location = device)
+    # exactpath1 = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', 'allen2dexact1.pt')
+    # exactpath2 = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', 'allen2dexact2.pt')
+    # gridpath = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', 'allen2dgrid.pt')
+    # grid = torch.load(gridpath, map_location = device)
+    # exact1 = torch.load(exactpath1, map_location = device)
+    # exact2 = torch.load(exactpath2, map_location = device)
+    # -------------------------------------------------------------------------------------------------------------------------------------
 
-    # -------------------------------------------------------------------------------
-    # model configuration
+    # -------------------------------------------------------------------------------------------------------------------------------------
+    # model configuration, modified the DATASET_MAP and LOSS_MAP according to your need
     DATASET_MAP = {'poi': poisson,
-                    'allen': allencahn}
+                    'allenw': allencahn}
     LOSS_MAP = {'poi':PoiLoss,
                 'allen': AllenCahn2dLoss,
                 'allenw': AllenCahnW,
@@ -47,9 +48,9 @@ def train(**kwargs):
             'num_input':opt.num_input,
             'num_output':opt.num_oupt, 
             'num_node':opt.num_node}
-    # -------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------------------------------------------------------------
     
-    # -------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------------------------------------------------------------
     # model initialization
     model = getattr(models, opt.model)(**keys)
     if opt.load_model_path:
@@ -57,56 +58,71 @@ def train(**kwargs):
     model.to(device)
     model.apply(weight_init)
     modelold = getattr(models, opt.model)(**keys)
-    datI = allencahn(num = 2500, boundary = False, device = device)
+    modelold.to(device)
+    datI = DATASET_MAP[opt.functional](num = 2500, boundary = False, device = device)
     if opt.pretrain is None:
         ini_dat = torch.zeros_like(datI)
         with torch.no_grad():
             previous = model(ini_dat)
         modelold.load_state_dict(model.state_dict())
     else:
-        modelold.load_state_dict(torch.load(opt.pretrain))
+        init_path = osp.join(osp.dirname(osp.realpath(__file__)), 'checkpoints', opt.pretrain)
+        modelold.load_state_dict(torch.load(init_path))
         with torch.no_grad():
-            previous = model(ini_dat)
+            previous = model(datI)
 
-    # -------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------------------------------------------------------------
 
-    # -------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------------------------------------------------------------
     # model optimizer and recorder
     op = Optim(model.parameters(), opt)
     optimizer = op.optimizer
-    previous_err = torch.tensor(10000)
-    best_epoch = 0
-    # -------------------------------------------------------------------------------
+    loss_meter = meter.AverageValueMeter()
+    timestamp = [10, 30, 100, 150]
+    gradstotal = []
+    log_path = osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'evolution',  'grads.pt')
+    # -------------------------------------------------------------------------------------------------------------------------------------
 
-    # -------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------------------------------------------------------------------
     # train part
     for epoch in range(opt.max_epoch + 1):
-
-        while()
- 
-        for _ in range(50):
+        loss_meter.reset()
+        grads = []
+        step = 0
+        while True:
+            grad = 0.
             optimizer.zero_grad()
-            datI = allencahn(num = 2500, boundary = False, device = device)
-            datB = allencahn(num = 100, boundary = True, device = device)
+            datI = DATASET_MAP[opt.functional](num = 2500, boundary = False, device = device)
+            datB = DATASET_MAP[opt.functional](num = 100, boundary = True, device = device)
             with torch.no_grad():
                 previous = modelold(datI) 
-            loss = AllenCahn2dLoss(model, datI, datB, previous) 
+            loss = LOSS_MAP[opt.functional](model, datI, datB, previous) 
             loss.backward()
             optimizer.step()
-    modelold.load_state_dict(model.state_dict())
-    if epoch % 500 == 0:
-        log = 'Epoch: {:05d}, Loss: {:.5f}'
-        print(log.format(epoch, torch.abs(torch.tensor(loss_meter.value()[0]))))
-    # -------------------------------------------------------------------------------
+            loss_meter.add(loss.item())
+            for i in model.parameters():
+                grad += torch.sum(i.grad*i.grad)
+            if epoch in timestamp:
+                grads.append(grad)
+            if torch.sqrt(grad) < 1e-7 or step == 500:
+                break
+            step += 1
+        if epoch in timestamp:
+            gradstotal.append(grads)
+            model.save(f'evolution{epoch}.pt')
+        modelold.load_state_dict(model.state_dict())
+        if epoch % 20 == 0:
+            log = 'Epoch: {:05d}, Loss: {:.5f}'
+            print(log.format(epoch, torch.abs(torch.tensor(loss_meter.value()[0]))))
+    torch.save(gradstotal, log_path)
+
+    # -------------------------------------------------------------------------------------------------------------------------------------
 
 
 
 
 
 
-        # loss_meter = meter.AverageValueMeter()
-        # loss_meter.reset()
-        # loss_meter.add(loss.item())  # meters update
         
         # if epoch % 100 == 0:
         #     test_err1 = eval(model, grid, exact1)
@@ -127,13 +143,6 @@ def train(**kwargs):
         #             pass
         #     log = 'Epoch: {:05d}, Loss: {:.5f}, Test: {:.5f}, Best Epoch: {:05d}, Which: {}'
         #     print(log.format(epoch, torch.abs(torch.tensor(loss_meter.value()[0])), previous_err.item(), best_epoch, flag))
-
-        # if epoch % 100 == 0:
-        #     test_err = eval(model, grid, sol)
-        #     if test_err < previous_err:
-        #         model.save(name = opt.model + f'Tau{opt.tau}Epoch{opt.max_epoch}.pt')
-
-
         # datI = DATASET_MAP[opt.functional](num = 2000, boundary = False, device = device)
         # datB = DATASET_MAP[opt.functional](num = 25, boundary = True, device = device)
         # datI_loader = DataLoader(datI, 200, shuffle=True) # make sure that the dataloders are the same len for datI and datB
@@ -146,41 +155,30 @@ def train(**kwargs):
 def eval(model: Callable[..., Tensor], 
         grid: Tensor, 
         exact: Tensor):
-    """
+    r"""
     Compute the relative L2 norm
-
     """
     model.eval()
     pred = model(grid)
     err  = torch.pow(torch.mean(torch.pow(pred - exact, 2))/torch.mean(torch.pow(exact, 2)), 0.5)
     model.train()
-
     return err
 
 
 
 # just for testing, need to be modified
-def make_plot(**kwargs):
-
-    opt._parse(kwargs)
-    
+def make_plot(**kwargs) -> None:
+    opt._parse(kwargs) 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    
     # configure model
     model = getattr(models, opt.model)().eval()
-
     model.load(osp.join(osp.dirname(osp.realpath(__file__)), 'checkpoints', 'ResNetallenTau10Epoch20000.pt'), dev = device)
-
-
     path = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', 'allen2dgrid.pt')
     #grid = torch.load(gridpath, map_location = device)
-    grid = torch.load(path)
-    
+    grid = torch.load(path)   
     with torch.no_grad():
         pred = model(grid)
-
     plot(pred)
-
     return None
 
 
