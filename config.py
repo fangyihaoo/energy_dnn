@@ -29,9 +29,9 @@ class DefaultConfig(object):
 
     grid = 'poiss2dgrid.pt'
     
-    method = 'adam'
+    method = 'BB'
 
-    max_epoch = 150 # number of epoch
+    max_epoch = 10 # number of epoch
 
     lr = 0.0005 # initial learning rate
 

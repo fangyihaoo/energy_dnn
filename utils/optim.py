@@ -62,19 +62,17 @@ class BB(Optimizer):
 
     """
 
-    def __init__(self, params, lr = 1e-5, jump = 0):
+    def __init__(self, params, lr = 1e-7):
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
-        if not 0 <= jump:
-            raise ValueError("Invalid epsilon value: {}".format(eps))
-        defaults = dict(lr = lr, jump = jump)
+        defaults = dict(lr = lr)
         super(BB, self).__init__(params, defaults)
 
     def __setstate__(self, state):
         super(BB, self).__setstate__(state)
 
     @torch.no_grad()
-    def step(self, closure=None):
+    def step(self, jump: int = 0, closure = None):
         """Performs a single optimization step.
         Args:
             closure (callable, optional): A closure that reevaluates the model
@@ -90,7 +88,6 @@ class BB(Optimizer):
             grads = []
             oldparams = []
             oldgrads = []
-            jump = group['jump']
             lr = group['lr']
             for p in group['params']:
                 if p.grad is not None:
@@ -131,13 +128,13 @@ def bb(params: List[Tensor],
         skyk_sum = 0
         for i, param in enumerate(params):
             yk = grads[i] - oldgrads[i]
-            sk = param[i] - oldparams[i]
-            sk_sum +=torch.inner(sk, sk)
-            skyk_sum += torch.inner(yk, sk)  
+            sk = param - oldparams[i]
+            sk_sum += torch.sum(sk*sk)
+            skyk_sum += torch.sum(yk*sk)
         step_I = sk_sum/skyk_sum
         lr = step_I
     # update the parameters
     for i, param in enumerate(params):
-        oldparams[i] = param[i]
-        oldgrads[i] = grads[i]
-        param.add_(-lr*grad)
+        oldparams[i] = param.detach().clone()
+        oldgrads[i] = (grads[i]).detach().clone()
+        param.add_(-lr*grads[i])

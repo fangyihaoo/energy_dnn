@@ -1,12 +1,11 @@
 import torch
 import torch.nn as nn
-from torch.optim.lr_scheduler import StepLR 
+# from torch.optim.lr_scheduler import StepLR
 import models
 from data import poisson, allencahn
 from utils import Optim
 from utils import PoiLoss, AllenCahn2dLoss, AllenCahnW, AllenCahnLB
 from utils import weight_init
-from utils import plot
 # from torch.utils.data import DataLoader
 from torchnet import meter
 import os.path as osp
@@ -70,7 +69,6 @@ def train(**kwargs):
         modelold.load_state_dict(torch.load(init_path))
         with torch.no_grad():
             previous = model(datI)
-
     # -------------------------------------------------------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------------------------------------------------------
@@ -81,6 +79,7 @@ def train(**kwargs):
     timestamp = [10, 30, 100, 150]
     gradstotal = []
     log_path = osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'evolution',  'grads.pt')
+    # scheduler = StepLR(optimizer, step_size=opt.step_size, gamma=opt.lr_decay)
     # -------------------------------------------------------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------------------------------------------------------
@@ -98,7 +97,7 @@ def train(**kwargs):
                 previous = modelold(datI) 
             loss = LOSS_MAP[opt.functional](model, datI, datB, previous) 
             loss.backward()
-            optimizer.step()
+            optimizer.step(jump = step)
             loss_meter.add(loss.item())
             for i in model.parameters():
                 grad += torch.sum(i.grad*i.grad)
@@ -107,20 +106,29 @@ def train(**kwargs):
             if torch.sqrt(grad) < 1e-7 or step == 500:
                 break
             step += 1
-        if epoch in timestamp:
-            gradstotal.append(grads)
-            model.save(f'evolution{epoch}.pt')
+        # if epoch in timestamp:
+        #     gradstotal.append(grads)
+        #     model.save(f'evolution{epoch}.pt')
         modelold.load_state_dict(model.state_dict())
         if epoch % 20 == 0:
             log = 'Epoch: {:05d}, Loss: {:.5f}'
             print(log.format(epoch, torch.abs(torch.tensor(loss_meter.value()[0]))))
-    torch.save(gradstotal, log_path)
+    # torch.save(gradstotal, log_path)
 
     # -------------------------------------------------------------------------------------------------------------------------------------
 
-
-
-
+@torch.no_grad()
+def eval(model: Callable[..., Tensor], 
+        grid: Tensor, 
+        exact: Tensor):
+    r"""
+    Compute the relative L2 norm
+    """
+    model.eval()
+    pred = model(grid)
+    err  = torch.pow(torch.mean(torch.pow(pred - exact, 2))/torch.mean(torch.pow(exact, 2)), 0.5)
+    model.train()
+    return err
 
 
         
@@ -151,39 +159,6 @@ def train(**kwargs):
 
 
 
-@torch.no_grad()
-def eval(model: Callable[..., Tensor], 
-        grid: Tensor, 
-        exact: Tensor):
-    r"""
-    Compute the relative L2 norm
-    """
-    model.eval()
-    pred = model(grid)
-    err  = torch.pow(torch.mean(torch.pow(pred - exact, 2))/torch.mean(torch.pow(exact, 2)), 0.5)
-    model.train()
-    return err
-
-
-
-# just for testing, need to be modified
-def make_plot(**kwargs) -> None:
-    opt._parse(kwargs) 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    # configure model
-    model = getattr(models, opt.model)().eval()
-    model.load(osp.join(osp.dirname(osp.realpath(__file__)), 'checkpoints', 'ResNetallenTau10Epoch20000.pt'), dev = device)
-    path = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', 'allen2dgrid.pt')
-    #grid = torch.load(gridpath, map_location = device)
-    grid = torch.load(path)   
-    with torch.no_grad():
-        pred = model(grid)
-    plot(pred)
-    return None
-
-
-
-
 def help():
     """
     Print out the help information： python file.py help
@@ -194,7 +169,6 @@ def help():
     <function> := train | make_plot | help
     Example: 
             python {0} train --lr=1e-5
-            python {0} make_plot --load_model_path='...'
             python {0} help
 
     Avaiable args: please refer to config.py""".format(__file__))

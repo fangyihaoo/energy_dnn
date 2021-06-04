@@ -7,5 +7,4 @@
 
 module load python
 
-
 python main.py train --model='ResNet' --functional='allenw' 
