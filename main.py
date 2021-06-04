@@ -74,7 +74,6 @@ def train(**kwargs):
     # model optimizer and recorder
     op = Optim(model.parameters(), opt)
     optimizer = op.optimizer
-    loss_meter = meter.AverageValueMeter()
     previous_err = torch.tensor(10000)
     best_epoch = 0
     # -------------------------------------------------------------------------------
@@ -82,7 +81,9 @@ def train(**kwargs):
     # -------------------------------------------------------------------------------
     # train part
     for epoch in range(opt.max_epoch + 1):
-        loss_meter.reset()
+
+        while()
+ 
         for _ in range(50):
             optimizer.zero_grad()
             datI = allencahn(num = 2500, boundary = False, device = device)
@@ -92,7 +93,6 @@ def train(**kwargs):
             loss = AllenCahn2dLoss(model, datI, datB, previous) 
             loss.backward()
             optimizer.step()
-            loss_meter.add(loss.item())  # meters update
     modelold.load_state_dict(model.state_dict())
     if epoch % 500 == 0:
         log = 'Epoch: {:05d}, Loss: {:.5f}'
@@ -104,7 +104,9 @@ def train(**kwargs):
 
 
 
-
+        # loss_meter = meter.AverageValueMeter()
+        # loss_meter.reset()
+        # loss_meter.add(loss.item())  # meters update
         
         # if epoch % 100 == 0:
         #     test_err1 = eval(model, grid, exact1)
