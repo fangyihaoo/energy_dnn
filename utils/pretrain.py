@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torch import Tensor
 import sys
 import os.path as osp
 sys.path.append(osp.dirname(osp.dirname(osp.abspath(__file__))))
@@ -14,7 +15,8 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 
-def elliptical(x, y):
+# change this part according to your specific task
+def elliptical(x: Tensor, y: Tensor):
     m = nn.Tanh()
     return (-m(10*(torch.sqrt(x**2 + 4*y**2) - 0.5))).reshape((-1, 1))
 
@@ -59,7 +61,7 @@ def pretrain():
         optimizer.step()
 
     # check the model and save it
-    path = osp.join(osp.dirname(osp.dirname(osp.abspath(__file__))), 'result', "")
+    path = osp.join(osp.dirname(osp.dirname(osp.abspath(__file__))), 'log', "")
     plt.figure()
     pred = model(Z)
     pred = pred.detach().numpy()

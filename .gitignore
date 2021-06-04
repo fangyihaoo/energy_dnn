@@ -1,7 +1,10 @@
 /*.o*
 /data/exact_sol
 /*.job
-/result/*.png
+/log/*.png
+/log/loss
+/log/evolution
+/draftCode
 
 # General
 .DS_Store
