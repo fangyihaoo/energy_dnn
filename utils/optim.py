@@ -130,7 +130,7 @@ def bb(params: List[Tensor],
             sk_sum += torch.sum(sk*sk)
             skyk_sum += torch.sum(yk*sk)
         step_I = sk_sum/skyk_sum
-        lr = step_I
+        lr = min(step_I, 1e-3)
     # update the parameters
     for i, param in enumerate(params):
         oldparams[i] = param.detach().clone()
