@@ -1,6 +1,7 @@
 /*.o*
 /data/exact_sol
 /*.job
+/result/*.png
 
 # General
 .DS_Store

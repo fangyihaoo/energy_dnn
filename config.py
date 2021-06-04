@@ -29,17 +29,17 @@ class DefaultConfig(object):
     
     method = 'adam'
 
-    max_epoch = 20000 # number of epoch
+    max_epoch = 3000 # number of epoch
 
-    lr = 0.01 # initial learning rate
+    lr = 0.001 # initial learning rate
 
     lr_decay = 0.5 # lr = lr*lr_decay
 
-    step_size = 4000
+    step_size = 1000
 
-    # momentum = 0.9 # Momentum for modified SGD
+    momentum = 0.9 # Momentum for modified SGD
 
-    # nesterov = True # Nesterov momentum for SGD
+    nesterov = True # Nesterov momentum for SGD
 
     # alpha = 0.99 # alpha for RMSProp
     

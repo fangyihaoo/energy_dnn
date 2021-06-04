@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.optim.lr_scheduler import StepLR 
 import models
-from data import Poisson, AllenCahn
+from data import Poisson, AllenCahn, allencahn
 from utils import Optim
 from utils import PoiLoss, AllenCahn2dLoss
 from utils import weight_init
@@ -15,15 +15,20 @@ from torch import Tensor
 from config import opt
 
 
+
+
 def train(**kwargs):
 
     # setup
     opt._parse(kwargs)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    exactpath = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', opt.exact)
-    gridpath = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', opt.grid)
+    exactpath1 = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', 'allen2dexact1.pt')
+    exactpath2 = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', 'allen2dexact2.pt')
+    gridpath = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', 'allen2dgrid.pt')
     grid = torch.load(gridpath, map_location = device)
-    exact = torch.load(exactpath, map_location = device)
+    exact1 = torch.load(exactpath1, map_location = device)
+    exact2 = torch.load(exactpath2, map_location = device)
+    flag = True
 
     # configure model
     DATASET_MAP = {'poi':Poisson,
@@ -60,34 +65,55 @@ def train(**kwargs):
 
     for epoch in range(opt.max_epoch + 1):
         loss_meter.reset()
-        datI = DATASET_MAP[opt.functional](num = 1000, boundary = False, device = device)
-        datB = DATASET_MAP[opt.functional](num = 25, boundary = True, device = device)
-        datI_loader = DataLoader(datI, 100, shuffle=True) # make sure that the dataloders are the same len for datI and datB
-        datB_loader = DataLoader(datB, 10, shuffle=True)
+        # datI = DATASET_MAP[opt.functional](num = 2000, boundary = False, device = device)
+        # datB = DATASET_MAP[opt.functional](num = 25, boundary = True, device = device)
+        # datI_loader = DataLoader(datI, 200, shuffle=True) # make sure that the dataloders are the same len for datI and datB
+        # datB_loader = DataLoader(datB, 10, shuffle=True)
 
-        for data in zip(datI_loader, datB_loader):
-            optimizer.zero_grad()
-            loss = LOSS_MAP[opt.functional](model, data[0], data[1])
-            if opt.tau != 0:
-                regularizer = 0
-                for i , j in zip(model.parameters(), w0):
-                    regularizer += torch.sum(torch.pow((i - j),2))
-                loss += opt.tau*regularizer                
+        datI = allencahn(num = 2000, boundary = False, device = device)
+        datB = allencahn(num = 25, boundary = True, device = device)
+        # for data in zip(datI_loader, datB_loader):
+        optimizer.zero_grad()
+        # loss = LOSS_MAP[opt.functional](model, data[0], data[1])
+        loss = LOSS_MAP[opt.functional](model, datI, datB)
+        if opt.tau != 0:
+            regularizer = 0
+            for i , j in zip(model.parameters(), w0):
+                regularizer += torch.sum(torch.pow((i - j),2))
+            loss += opt.tau*regularizer                
 
-            loss.backward()
-            optimizer.step()
-            loss_meter.add(loss.item())  # meters update
+        loss.backward()
+        optimizer.step()
+        loss_meter.add(loss.item())  # meters update
         scheduler.step()
         if opt.tau != 0:
             w0[:] = [i.data for i in model.parameters()]
+
+        # if epoch % 100 == 0:
+        #     log = 'Epoch: {:05d}, Loss: {:.5f}'
+        #     print(log.format(epoch, torch.abs(torch.tensor(loss_meter.value()[0]))))
+    
+    # model.save(name = opt.model + opt.functional + f'Tau{opt.tau}Epoch{opt.max_epoch}.pt')
         
         if epoch % 100 == 0:
-            test_err = eval(model, grid, exact)
-            if test_err < previous_err:
-                previous_err = test_err
-                best_epoch = epoch
-            log = 'Epoch: {:05d}, Loss: {:.5f}, Test: {:.5f}, Best Epoch: {:05d}'
-            print(log.format(epoch, torch.abs(torch.tensor(loss_meter.value()[0])), test_err.item(), best_epoch))
+            test_err1 = eval(model, grid, exact1)
+            test_err2 = eval(model, grid, exact2)
+            if test_err1 < test_err2:
+                if test_err1 < previous_err:
+                    previous_err = test_err1
+                    best_epoch = epoch
+                    flag = True
+                else:
+                    pass
+            else:
+                if test_err2 < previous_err:
+                    previous_err = test_err2
+                    best_epoch = epoch
+                    flag = False
+                else:
+                    pass
+            log = 'Epoch: {:05d}, Loss: {:.5f}, Test: {:.5f}, Best Epoch: {:05d}, Which: {}'
+            print(log.format(epoch, torch.abs(torch.tensor(loss_meter.value()[0])), previous_err.item(), best_epoch, flag))
 
         # if epoch % 100 == 0:
         #     test_err = eval(model, grid, sol)
@@ -166,21 +192,3 @@ if __name__=='__main__':
 
 
 
-
-
-
-
-
-    # optimizer
-    # we only apply L2 penalty on weight
-    # weight_p, bias_p = [], []
-    # for name, p in model.named_parameters():
-    #     if 'bias' in name:
-    #         bias_p += [p]
-    #     else:
-    #         weight_p += [p]
-
-    # op = Optim([
-    #     {'params': weight_p, 'weight_decay': opt.weight_decay},
-    #     {'params': bias_p, 'weight_decay':0}
-    #     ], opt)

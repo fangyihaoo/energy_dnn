@@ -49,10 +49,10 @@ def poi2d(grid: Tensor) -> Tensor:
 
 def allen2d(grid: Tensor) -> Tensor:
     '''
-    Generate exact solution according to the following 2D Allen-Cahn type energy functional
+    Generate exact solution according to the following 1D Allen-Cahn type energy functional
     
 
-    exact:  
+    exact:  \phi(x) = - tanh(x/(\sqrt(2)*\Epison))
 
     input:  
         grid: location of the grid tensor (N, 2)
@@ -64,7 +64,21 @@ def allen2d(grid: Tensor) -> Tensor:
     pass
 
 
+def allen1d(grid: Tensor) -> Tensor:
+    '''
+    Generate exact solution according to the following 1D Allen-Cahn type energy functional
+    
 
+    exact:  \phi(x) = - tanh(x/(\sqrt(2)*\Epison))
+
+    input:  
+        grid: location of the grid tensor (N, 2)
+
+    output: 
+        exact solution (N, 1)
+    '''
+
+    pass
 
 
 

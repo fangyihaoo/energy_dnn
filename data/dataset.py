@@ -90,15 +90,16 @@ class AllenCahn(Dataset):
     '''
     def __init__(self, num: int = 1000, boundary: bool = False, device='cpu'):  
         if boundary:
-            tb = torch.cat((torch.rand(num, 1), torch.tensor([1.]).repeat(num)[:,None]), dim=1)
-            bb = torch.cat((torch.rand(num, 1)* pi, torch.tensor([0.]).repeat(num)[:,None]), dim=1)
-            rb = torch.cat((torch.tensor([1.]).repeat(num)[:,None], torch.rand(num, 1)), dim=1)
-            lb = torch.cat((torch.tensor([0.]).repeat(num)[:,None], torch.rand(num, 1)), dim=1)
+            tb = torch.cat((torch.rand(num, 1)*2 - 1, torch.tensor([1.]).repeat(num)[:,None]), dim=1)
+            bb = torch.cat((torch.rand(num, 1)*2 - 1, torch.tensor([-1.]).repeat(num)[:,None]), dim=1)
+            rb = torch.cat((torch.tensor([1.]).repeat(num)[:,None], torch.rand(num, 1)*2 - 1), dim=1)
+            lb = torch.cat((torch.tensor([-1.]).repeat(num)[:,None], torch.rand(num, 1)*2 - 1), dim=1)
             self.data = torch.cat((tb, bb, rb, lb), dim=0)
             self.data = self.data.to(device) 
 
         else:
-            self.data = torch.from_numpy(lhs(2, num)).float().to(device)        # generate the interior points
+            self.data = torch.from_numpy(lhs(2, num)*2 - 1).float().to(device)        # generate the interior points
+            #self.data = torch.rand((num,2)).to(device)
         
     def __getitem__(self, index):
         x = self.data[index]
@@ -124,13 +125,13 @@ def allencahn(num: int = 1024, boundary: bool = False, device='cpu'):
 
     '''
     if boundary:
-        tb = torch.cat((torch.rand(num, 1), torch.tensor([1.]).repeat(num)[:,None]), dim=1)
-        bb = torch.cat((torch.rand(num, 1)* pi, torch.tensor([0.]).repeat(num)[:,None]), dim=1)
-        rb = torch.cat((torch.tensor([1.]).repeat(num)[:,None], torch.rand(num, 1)), dim=1)
-        lb = torch.cat((torch.tensor([0.]).repeat(num)[:,None], torch.rand(num, 1)), dim=1)
+        tb = torch.cat((torch.rand(num, 1)*2 - 1, torch.tensor([1.]).repeat(num)[:,None]), dim=1)
+        bb = torch.cat((torch.rand(num, 1)*2 - 1, torch.tensor([-1.]).repeat(num)[:,None]), dim=1)
+        rb = torch.cat((torch.tensor([1.]).repeat(num)[:,None], torch.rand(num, 1)*2 - 1), dim=1)
+        lb = torch.cat((torch.tensor([-1.]).repeat(num)[:,None], torch.rand(num, 1)*2 - 1), dim=1)
         data = torch.cat((tb, bb, rb, lb), dim=0)
         data = data.to(device) 
         return data
     else:
-        data = torch.from_numpy(lhs(2, num)).float().to(device)        # generate the interior points
+        data = torch.from_numpy(lhs(2, num)*2 - 1).float().to(device)        # generate the interior points
         return data
