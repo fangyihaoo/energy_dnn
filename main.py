@@ -13,9 +13,6 @@ from typing import Callable
 from torch import Tensor
 from config import opt
 
-
-
-
 def train(**kwargs):
     # -------------------------------------------------------------------------------------------------------------------------------------
     # load the exact solution if exist

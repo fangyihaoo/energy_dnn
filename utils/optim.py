@@ -50,8 +50,6 @@ class Optim(object):
 
 
 
-
-
 class BB(Optimizer):
     r"""Implements Barzilai-Borwein Algorithm
     It has been proposed in `Adam: A Method for Stochastic Optimization`_.
