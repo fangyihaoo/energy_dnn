@@ -89,7 +89,6 @@ def train(**kwargs):
         # ---------------training setup in each time step---------------
         loss_meter.reset()
         energys = []
-        step = 0
         op = Optim(model.parameters(), opt)
         optimizer = op.optimizer
         scheduler = StepLR(optimizer, step_size=opt.step_size, gamma=opt.lr_decay)
@@ -114,7 +113,6 @@ def train(**kwargs):
             if abs((loss[1].item() - oldenergy)/oldenergy) < 1e-4 or step == 5000:
                 break
             oldenergy = loss[1].item()
-            step += 1
         if epoch in timestamp:
             energylist.append(energys)
             model.save(f'allencahn{epoch}.pt')
