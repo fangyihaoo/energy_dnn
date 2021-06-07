@@ -22,7 +22,7 @@ def PoiLoss(model, dat_i, dat_b):
     return loss_i + 500*loss_b
 
 
-def AllenCahn2dLoss(model, dat_i, dat_b):
+def AllenCahn2dLoss(model, dat_i, dat_b, previous):
 
     r"""
     Loss function for 2d Allen-Cahn type problem
@@ -37,10 +37,12 @@ def AllenCahn2dLoss(model, dat_i, dat_b):
     ux = torch.autograd.grad(outputs = output_i, inputs = dat_i, grad_outputs = torch.ones_like(output_i), retain_graph=True, create_graph=True)[0]
 
     loss_i =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True) + 25*torch.pow(torch.pow(output_i, 2) - 1, 2))
-    loss_b = torch.mean(torch.pow((output_b[torch.logical_or(dat_b[:,0] == 1., dat_b[:,0] == 0),:]  + 1), 2))
-    loss_b += torch.mean(torch.pow((output_b[torch.logical_or(dat_b[:,1] == 1., dat_b[:,1] == 0),:]  - 1), 2))
+    loss_b = torch.mean(torch.pow((output_b[torch.logical_or(dat_b[:,0] == 1., dat_b[:,0] == -1),:]  + 1), 2))
+    loss_b += torch.mean(torch.pow((output_b[torch.logical_or(dat_b[:,1] == 1., dat_b[:,1] == -1),:]  - 1), 2))
+    loss_p = 100*torch.mean(torch.pow(output_i - previous[0], 2))
+    loss_p += 100*torch.mean(torch.pow(output_b - previous[1], 2))
 
-    return loss_i + 500*loss_b
+    return loss_i + 500*loss_b + loss_p, loss_i
 
 def AllenCahnW(model, dat_i, dat_b, previous):
 
@@ -60,8 +62,8 @@ def AllenCahnW(model, dat_i, dat_b, previous):
     loss_i =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True) + 250*torch.pow(torch.pow(output_i, 2) - 1, 2)) 
     loss_b = torch.mean(torch.pow((output_b + 1), 2))
     loss_w = 1000*torch.pow((torch.mean(output_i) - A), 2)
-    loss_p = 1000*torch.mean(torch.pow(output_i - previous[0], 2))
-    loss_p += 1000*torch.mean(torch.pow(output_b - previous[1], 2))
+    loss_p = 100*torch.mean(torch.pow(output_i - previous[0], 2))
+    loss_p += 100*torch.mean(torch.pow(output_b - previous[1], 2))
 
     return loss_i + 500*loss_b + loss_w + loss_p, loss_i + loss_w
 

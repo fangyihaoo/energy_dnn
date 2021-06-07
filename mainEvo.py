@@ -78,9 +78,9 @@ def train(**kwargs):
     op = Optim(model.parameters(), opt)
     optimizer = op.optimizer
     loss_meter = meter.AverageValueMeter()
-    timestamp = [10, 30, 100, 150, 300]
+    timestamp = [10, 40, 300]
     energylist = []
-    log_path = osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'evolution',  'grads.pt')
+    log_path = osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'evolution',  'energys.pt')
     # -------------------------------------------------------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------------------------------------------------------
@@ -89,6 +89,7 @@ def train(**kwargs):
         # ---------------training setup in each time step---------------
         loss_meter.reset()
         energys = []
+        step = 0
         op = Optim(model.parameters(), opt)
         optimizer = op.optimizer
         scheduler = StepLR(optimizer, step_size=opt.step_size, gamma=opt.lr_decay)
@@ -108,6 +109,7 @@ def train(**kwargs):
             optimizer.step()
             scheduler.step()
             loss_meter.add(loss[1].item())
+            step += 1
             if epoch in timestamp:
                 energys.append(loss[1].item())            
             if abs((loss[1].item() - oldenergy)/oldenergy) < 1e-4 or step == 5000:

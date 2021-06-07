@@ -45,11 +45,6 @@ class DefaultConfig(object):
 
     # alpha = 0.99 # alpha for RMSProp
     
-    tau = 0 # 1/tau
-
-    ite = 2 # number of iteration
-
-
     def _parse(self, kwargs):
         '''
         update parameters according to user preference
