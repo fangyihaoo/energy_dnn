@@ -29,15 +29,15 @@ class DefaultConfig(object):
 
     grid = 'poiss2dgrid.pt'
     
-    method = 'BB'
+    method = 'adam'
 
-    max_epoch = 10 # number of epoch
+    max_epoch = 201 # number of epoch
 
-    lr = 0.0005 # initial learning rate
+    lr = 1e-3 # initial learning rate
 
     lr_decay = 0.5 # lr = lr*lr_decay
 
-    step_size = 1000
+    step_size = 300
 
     momentum = 0.9 # Momentum for modified SGD
 

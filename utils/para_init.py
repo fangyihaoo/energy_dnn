@@ -16,7 +16,7 @@ def weight_init(m):
     """
 
     if isinstance(m, nn.Linear):
-        gain = init.calculate_gain('tanh') # change this part according to your activation function
+        gain = init.calculate_gain('relu') # change this part according to your activation function
         init.xavier_uniform_(m.weight.data, gain=gain)
         if m.bias is not None:
             torch.nn.init.zeros_(m.bias)

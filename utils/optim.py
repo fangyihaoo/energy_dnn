@@ -51,30 +51,32 @@ class Optim(object):
 
 
 class BB(Optimizer):
-    r"""Implements Barzilai-Borwein Algorithm
-    It has been proposed in `Adam: A Method for Stochastic Optimization`_.
+    r"""Implements Modified Barzilai-Borwein Algorithm
     Args:
         params (iterable): iterable of parameters to optimize or dicts defining parameter groups
         lr (float, optional): learning rate (default: 1e-5)
-        jump (int): the step that jumps to update lr (default: 0)
+        alpha (float, optional): normalization rate of the gradient
 
     """
 
-    def __init__(self, params, lr = 1e-7):
+    def __init__(self, params, lr = 1e-8, alpha = 1):
         if not 0.0 <= lr:
             raise ValueError("Invalid learning rate: {}".format(lr))
-        defaults = dict(lr = lr)
+        if not 0.0 <= alpha:
+            raise ValueError("Invalid learning rate: {}".format(lr))
+        defaults = dict(lr = lr, alpha = alpha)
         super(BB, self).__init__(params, defaults)
 
     def __setstate__(self, state):
         super(BB, self).__setstate__(state)
 
     @torch.no_grad()
-    def step(self, jump: int = 0, closure = None):
+    def step(self, jump: int = 11, closure = None):
         """Performs a single optimization step.
         Args:
             closure (callable, optional): A closure that reevaluates the model
                 and returns the loss.
+            jump (int， optional): warm up stage. 
         """
         loss = None
         if closure is not None:
@@ -87,6 +89,7 @@ class BB(Optimizer):
             oldparams = []
             oldgrads = []
             lr = group['lr']
+            alpha = group['alpha']
             for p in group['params']:
                 if p.grad is not None:
                     params_with_grad.append(p)
@@ -104,6 +107,7 @@ class BB(Optimizer):
                    oldparams,
                    oldgrads,
                    lr=lr,
+                   alpha = alpha,
                    jump=jump)
 
         return loss
@@ -114,25 +118,31 @@ def bb(params: List[Tensor],
         oldgrads: List[Tensor],
         *,
         lr: float,
+        alpha: float,
         jump: int) -> None:
     r"""
     Functional API to perform BB updating algorithm 
     """
     lr = lr
-    # update the learning rate if jump greater than 20
-    if jump >= 20: 
+    #update the learning rate if jump greater than 20
+    if jump >= 10: 
         step_I = 0.
         sk_sum = 0
         skyk_sum = 0
+        device = params[0].grad.device
+        gradnorm = torch.norm(torch.stack([torch.norm(p.grad.detach()).to(device) for p in params]))
         for i, param in enumerate(params):
             yk = grads[i] - oldgrads[i]
-            sk = param - oldparams[i]
+            sk = param.detach() - oldparams[i]
             sk_sum += torch.sum(sk*sk)
             skyk_sum += torch.sum(yk*sk)
-        step_I = sk_sum/skyk_sum
-        lr = min(step_I, 1e-3)
+        step_I = sk_sum/(skyk_sum + 1e-8)
+        lr = min(step_I, alpha/gradnorm)
     # update the parameters
     for i, param in enumerate(params):
-        oldparams[i] = param.detach().clone()
-        oldgrads[i] = (grads[i]).detach().clone()
-        param.add_(-lr*grads[i])
+        grad = grads[i]
+        oldparam = oldparams[i]
+        oldgrad = oldgrads[i]
+        oldparam.copy_(param.detach())
+        oldgrad.copy_(grad)
+        param.add_(grad, alpha = -lr)

@@ -46,7 +46,7 @@ if __name__ == '__main__':
     import models
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = getattr(models, opt.model)().eval()
-    model.load(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))), 'checkpoints', 'evolution100.pt'), dev = device)
+    model.load(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))), 'checkpoints', 'allencahn200.pt'), dev = device)
     x = torch.linspace(-1, 1, 101)
     y = torch.linspace(-1, 1, 101)
     X, Y = torch.meshgrid(x, y)
@@ -60,4 +60,4 @@ if __name__ == '__main__':
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)
     plt.colorbar(h, cax=cax)
-    plt.savefig(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__)))+'pred100.png')
+    plt.savefig(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))),'allencahn200.png'))

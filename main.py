@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-# from torch.optim.lr_scheduler import StepLR
+from torch.optim.lr_scheduler import StepLR
 import models
 from data import poisson, allencahn
 from utils import Optim
@@ -56,16 +56,21 @@ def train(**kwargs):
     modelold = getattr(models, opt.model)(**keys)
     modelold.to(device)
     datI = DATASET_MAP[opt.functional](num = 2500, boundary = False, device = device)
+    datB = DATASET_MAP[opt.functional](num = 100, boundary = True, device = device)
+    previous = []
     if opt.pretrain is None:
         ini_dat = torch.zeros_like(datI)
+        b_dat = torch.zeros_like(datB)
         with torch.no_grad():
-            previous = model(ini_dat)
+            previous.append(model(ini_dat))
+            previous.append(model(b_dat))
         modelold.load_state_dict(model.state_dict())
     else:
         init_path = osp.join(osp.dirname(osp.realpath(__file__)), 'checkpoints', opt.pretrain)
         modelold.load_state_dict(torch.load(init_path))
         with torch.no_grad():
-            previous = model(datI)
+            previous.append(model(datI))
+            previous.append(model(datB))
     # -------------------------------------------------------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------------------------------------------------------
@@ -73,44 +78,51 @@ def train(**kwargs):
     op = Optim(model.parameters(), opt)
     optimizer = op.optimizer
     loss_meter = meter.AverageValueMeter()
-    timestamp = [10, 30, 100, 150]
-    gradstotal = []
+    timestamp = [10, 30, 100, 150, 300]
+    energylist = []
     log_path = osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'evolution',  'grads.pt')
-    # scheduler = StepLR(optimizer, step_size=opt.step_size, gamma=opt.lr_decay)
     # -------------------------------------------------------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # train part
     for epoch in range(opt.max_epoch + 1):
+        # ---------------training setup in each time step---------------
         loss_meter.reset()
-        grads = []
+        energys = []
         step = 0
+        op = Optim(model.parameters(), opt)
+        optimizer = op.optimizer
+        scheduler = StepLR(optimizer, step_size=opt.step_size, gamma=opt.lr_decay)
+        oldenergy = 1e-8
+        # ---------------------------------------------------------------
+        # --------------Optimization Loop at each time step--------------
         while True:
-            grad = 0.
             optimizer.zero_grad()
             datI = DATASET_MAP[opt.functional](num = 2500, boundary = False, device = device)
             datB = DATASET_MAP[opt.functional](num = 100, boundary = True, device = device)
             with torch.no_grad():
-                previous = modelold(datI) 
+                previous[0] = modelold(datI)
+                previous[1] = modelold(datB)
             loss = LOSS_MAP[opt.functional](model, datI, datB, previous) 
-            loss.backward()
-            optimizer.step(jump = step)
-            loss_meter.add(loss.item())
-            for i in model.parameters():
-                grad += torch.sum(i.grad*i.grad)
+            loss[0].backward()
+            nn.utils.clip_grad_norm_(model.parameters(),  1)
+            optimizer.step()
+            scheduler.step()
+            loss_meter.add(loss[1].item())
             if epoch in timestamp:
-                grads.append(grad)
-            if torch.sqrt(grad) < 1e-7 or step == 500:
+                energys.append(loss[1].item())            
+            if abs((loss[1].item() - oldenergy)/oldenergy) < 1e-4 or step == 5000:
                 break
+            oldenergy = loss[1].item()
             step += 1
-        # if epoch in timestamp:
-        #     gradstotal.append(grads)
-        #     model.save(f'evolution{epoch}.pt')
+        if epoch in timestamp:
+            energylist.append(energys)
+            model.save(f'allencahn{epoch}.pt')
         modelold.load_state_dict(model.state_dict())
-        if epoch % 20 == 0:
-            log = 'Epoch: {:05d}, Loss: {:.5f}'
-            print(log.format(epoch, torch.abs(torch.tensor(loss_meter.value()[0]))))
-    # torch.save(gradstotal, log_path)
+        # if epoch % 10 == 0:
+        #     log = 'Epoch: {:05d}, Loss: {:.5f}'
+        #     print(log.format(epoch, torch.tensor(loss_meter.value()[0])))
+    torch.save(gradstotal, log_path)
 
     # -------------------------------------------------------------------------------------------------------------------------------------
 
