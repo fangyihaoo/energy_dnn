@@ -30,9 +30,9 @@ class ResBlock(nn.Module):
         
         
 class ResNet(BasicModule):
-    '''
-    Residule network
-    '''
+    r"""
+        Residule network
+    """
 
     def __init__(self, 
         FClayer: int = 2,                                           # number of fully-connected layers in one residual block
@@ -65,16 +65,15 @@ class ResNet(BasicModule):
 
 
 class FullNet(BasicModule):
-    '''
-    Fully connected network
-    '''
+    r"""
+        MLP
+    """
 
     def __init__(self, 
-        FClayer: int = 2,                                                    # number of fully-connected layers
+        FClayer: int = 5,                                                    # number of fully-connected hidden layers
         activation: Callable[..., Tensor] = nn.Tanh(),                       # activation function
-        num_layer: int = 5,                                                  # number of layers
         num_input: int = 2,                                                  # dimension of input, in this case is 2 
-        num_node: int = 20,                                                  # number of nodes in one fully-connected layer
+        num_node: int = 20,                                                  # number of nodes in one fully-connected hidden layer
         num_oupt: int = 1,                                                   # dimension of output
         **kwargs
     ) -> None:
@@ -85,8 +84,8 @@ class FullNet(BasicModule):
         self.output = nn.Linear(num_node, num_oupt)
 
         'Fully connected blocks'     
-        self.linears_list = [nn.Linear(num_node, num_node) for i in range(num_layer)]
-        self.acti_list = [self.act for i in range(num_layer)]
+        self.linears_list = [nn.Linear(num_node, num_node) for i in range(FClayer)]
+        self.acti_list = [self.act for i in range(FClayer)]
         self.block = nn.Sequential(*[item for pair in zip(self.linears_list, self.acti_list)for item in pair])
 
     def forward(self, x):

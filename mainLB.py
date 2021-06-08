@@ -18,18 +18,20 @@ def train(**kwargs):
     # load the exact solution if exist
     opt._parse(kwargs)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    # exactpath1 = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', 'allen2dexact1.pt')
-    # exactpath2 = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', 'allen2dexact2.pt')
-    # gridpath = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', 'allen2dgrid.pt')
-    # grid = torch.load(gridpath, map_location = device)
-    # exact1 = torch.load(exactpath1, map_location = device)
-    # exact2 = torch.load(exactpath2, map_location = device)
+    exactpath1 = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', 'allen2dexact1.pt')
+    exactpath2 = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', 'allen2dexact2.pt')
+    gridpath = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', 'allen2dgrid.pt')
+    grid = torch.load(gridpath, map_location = device)
+    exact1 = torch.load(exactpath1, map_location = device)
+    exact2 = torch.load(exactpath2, map_location = device)
     # -------------------------------------------------------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # model configuration, modified the DATASET_MAP and LOSS_MAP according to your need
     DATASET_MAP = {'poi': poisson,
-                    'allenw': allencahn}
+                    'allenw': allencahn,
+                    'allen': allencahn,
+                    'allenlb':allencahn}
     LOSS_MAP = {'poi':PoiLoss,
                 'allen': AllenCahn2dLoss,
                 'allenw': AllenCahnW,
@@ -78,9 +80,9 @@ def train(**kwargs):
     op = Optim(model.parameters(), opt)
     optimizer = op.optimizer
     loss_meter = meter.AverageValueMeter()
-    timestamp = [10, 40, 300]
-    energylist = []
-    log_path = osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'evolution',  'energys.pt')
+    timestep = [1000, 2000, 4000]
+    previous_err = 10000
+    best_epoch = 0
     # -------------------------------------------------------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------------------------------------------------------
@@ -88,14 +90,11 @@ def train(**kwargs):
     for epoch in range(opt.max_epoch + 1):
         # ---------------training setup in each time step---------------
         loss_meter.reset()
-        energys = []
         step = 0
         op = Optim(model.parameters(), opt)
         optimizer = op.optimizer
-        scheduler = StepLR(optimizer, step_size=opt.step_size, gamma=opt.lr_decay)
-        oldenergy = 1e-8
         # ---------------------------------------------------------------
-        # --------------Optimization Loop at each time step--------------
+        # ----------------------Optimization  step-----------------------
         while True:
             optimizer.zero_grad()
             datI = DATASET_MAP[opt.functional](num = 2500, boundary = False, device = device)
@@ -105,25 +104,19 @@ def train(**kwargs):
                 previous[1] = modelold(datB)
             loss = LOSS_MAP[opt.functional](model, datI, datB, previous) 
             loss[0].backward()
-            nn.utils.clip_grad_norm_(model.parameters(),  0.1)
+            nn.utils.clip_grad_norm_(model.parameters(),  1)
             optimizer.step()
-            scheduler.step()
             loss_meter.add(loss[1].item())
-            step += 1
-            if epoch in timestamp:
-                energys.append(loss[1].item())            
-            if abs((loss[1].item() - oldenergy)/oldenergy) < 1e-5 or step == 6000:
+            step += 1          
+            if step == 10:
                 break
-            oldenergy = loss[1].item()
-        print(step)
-        if epoch in timestamp:
-            energylist.append(energys)
-            model.save(f'allencahn{epoch}.pt')
+        if epoch in timestep:
+            opt.lr = opt.lr * opt.lr_decay
         modelold.load_state_dict(model.state_dict())
-        # if epoch % 10 == 0:
-        #     log = 'Epoch: {:05d}, Loss: {:.5f}'
-        #     print(log.format(epoch, torch.tensor(loss_meter.value()[0])))
-    torch.save(energylist, log_path)
+
+        if epoch % 100 == 0:
+            print(f'loss is {loss_meter.value()[0]}')
+    model.save(f'allencahnLB{epoch}.pt')
 
     # -------------------------------------------------------------------------------------------------------------------------------------
 
@@ -141,11 +134,14 @@ def eval(model: Callable[..., Tensor],
     return err
 
 
+        
 
         # datI = DATASET_MAP[opt.functional](num = 2000, boundary = False, device = device)
         # datB = DATASET_MAP[opt.functional](num = 25, boundary = True, device = device)
         # datI_loader = DataLoader(datI, 200, shuffle=True) # make sure that the dataloders are the same len for datI and datB
         # datB_loader = DataLoader(datB, 10, shuffle=True)
+
+
 
 
 

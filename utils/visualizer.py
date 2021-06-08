@@ -46,7 +46,7 @@ if __name__ == '__main__':
     import models
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = getattr(models, opt.model)().eval()
-    model.load(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))), 'checkpoints', 'allencahn200.pt'), dev = device)
+    model.load(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))), 'checkpoints', 'allencahnLB5000.pt'), dev = device)
     x = torch.linspace(-1, 1, 101)
     y = torch.linspace(-1, 1, 101)
     X, Y = torch.meshgrid(x, y)
@@ -56,8 +56,20 @@ if __name__ == '__main__':
     pred = pred.reshape(101, 101)
     plt.figure(figsize=(6,6))
     ax = plt.subplot(1, 1, 1)
-    h = plt.imshow(pred, interpolation='nearest', cmap='rainbow',extent=[0, 1, 0, 1],origin='lower', aspect='auto')
+    h = plt.imshow(pred, interpolation='nearest', cmap='rainbow',extent=[-1, 1, -1, 1],origin='lower', aspect='auto')
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)
     plt.colorbar(h, cax=cax)
-    plt.savefig(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))),'allencahn200.png'))
+    plt.savefig(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))),'allencahnLB5000.png'))
+
+    # allencahn300
+    #allencahn2dloss1001
+    # FClayer = 2
+
+    # num_blocks = 3
+
+    # num_input = 2
+
+    # num_oupt = 1
+
+    # num_node = 10

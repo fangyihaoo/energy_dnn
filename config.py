@@ -24,20 +24,20 @@ class DefaultConfig(object):
     load_model_path = None
 
     pretrain = 'init.pt'
-    
+
     exact = 'poiss2dexact.pt'
 
     grid = 'poiss2dgrid.pt'
     
     method = 'adam'
 
-    max_epoch = 201 # number of epoch
+    max_epoch = 1001 # number of epoch
 
     lr = 1e-3 # initial learning rate
 
     lr_decay = 0.5 # lr = lr*lr_decay
 
-    step_size = 300
+    step_size = 1000
 
     momentum = 0.9 # Momentum for modified SGD
 

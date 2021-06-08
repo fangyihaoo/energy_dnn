@@ -6,7 +6,7 @@
 /log/evolution
 /draftCode
 /checkpoints/*.pt
-
+/*.png
 
 # General
 .DS_Store
