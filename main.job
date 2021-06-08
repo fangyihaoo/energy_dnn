@@ -7,4 +7,4 @@
 
 module load python
 
-python mainErr.py train --model='ResNet' --functional='allen'  --max_epoch=10000 --pretrain=None
+python mainErr.py train --model='ResNet' --functional='allen'  --max_epoch=30000 --pretrain=None

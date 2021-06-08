@@ -79,7 +79,7 @@ def train(**kwargs):
     op = Optim(model.parameters(), opt)
     optimizer = op.optimizer
     loss_meter = meter.AverageValueMeter()
-    # timestep = [1000, 2000, 4000, 6000, 7000, 8000]
+    # timestep = [10000, ]
     previous_err = 10000
     best_epoch = 0
     # -------------------------------------------------------------------------------------------------------------------------------------
@@ -107,7 +107,7 @@ def train(**kwargs):
             optimizer.step()
             loss_meter.add(loss[1].item())
             step += 1          
-            if step == 10:
+            if step == 5:
                 break
         # if epoch in timestep:
         #     opt.lr = opt.lr * opt.lr_decay

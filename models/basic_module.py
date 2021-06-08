@@ -21,7 +21,7 @@ class BasicModule(nn.Module):
 
     def save(self, name: str = None):
         """
-        save the model with the default name
+        save the model
         """
         path = osp.join(osp.dirname(osp.realpath(__file__)), '..', 'checkpoints', '')    
         if name is None:

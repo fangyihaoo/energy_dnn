@@ -15,8 +15,9 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 
-# change this part according to your specific task
+
 def elliptical(x: Tensor, y: Tensor):
+    # change this part according to your specific task
     m = nn.Tanh()
     return (-m(10*(torch.sqrt(x**2 + 4*y**2) - 0.5))).reshape((-1, 1))
 
