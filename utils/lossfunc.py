@@ -137,11 +137,11 @@ def AllenCahnLB(model: Callable[...,Tensor],
 
 
 
-def PoissPINN(model: Callable[..., Tensor], 
+def HeatPINN(model: Callable[..., Tensor], 
               dat_i: Tensor, 
               dat_b: Tensor, 
               dat_f: Tensor) -> Tensor:
-    """The loss function for poisson equation with PINN
+    """The loss function for heat equation with PINN
 
     Args:
         model (Callable[..., Tensor]): Network 
@@ -162,9 +162,35 @@ def PoissPINN(model: Callable[..., Tensor],
     ddu = torch.autograd.grad(outputs = du, inputs = dat_f, grad_outputs = torch.ones_like(du), create_graph=True)[0]
     lu = ddu[:,0:2]
     
-    loss = torch.mean(torch.pow(output_i - 1, 2))
+    loss = torch.mean(torch.pow(output_i, 2))
     loss += 100*torch.mean(torch.pow(output_b, 2))
     loss += torch.mean(torch.pow(ut - torch.sum(lu, dim=1, keepdim=True) - f, 2))
+    
+    return loss
+
+
+def PoissPINN(model: Callable[..., Tensor], 
+              dat_i: Tensor, 
+              dat_b: Tensor) -> Tensor:
+    """The loss function for poisson equation with PINN
+
+    Args:
+        model (Callable[..., Tensor]): Network 
+        dat_i (Tensor): Interior points
+        dat_b (Tensor): Boundary points
+
+    Returns:
+        Tensor: loss
+    """
+    
+    output_b = model(dat_b)
+    dat_i.requires_grad = True
+    output_i = model(dat_i)
+    f = (2*torch.sin(dat_i[:,0])*torch.cos(dat_i[:,1])).unsqueeze_(1)
+    du = torch.autograd.grad(outputs = output_i, inputs = dat_i, grad_outputs = torch.ones_like(output_i), retain_graph=True, create_graph=True)[0]
+    ddu = torch.autograd.grad(outputs = du, inputs = dat_i, grad_outputs = torch.ones_like(du), create_graph=True)[0]
+    loss = 500*torch.mean(torch.pow(output_b, 2))
+    loss += torch.mean(torch.pow(torch.sum(ddu, dim=1, keepdim=True) + f, 2))
     
     return loss
     

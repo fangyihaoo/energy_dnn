@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 # from torch.optim.lr_scheduler import StepLR
 import models
-from data import poisspinn
+from data import heatpinn, poisspinn
 from utils import Optim
-from utils import PoissPINN
+from utils import HeatPINN, PoissPINN
 from utils import weight_init
 from torchnet import meter
 import os.path as osp
@@ -27,8 +27,10 @@ def train(**kwargs):
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # model configuration, modified the DATASET_MAP and LOSS_MAP according to your need
-    DATASET_MAP = {'poi': poisspinn}
-    LOSS_MAP = {'poi':PoissPINN}
+    DATASET_MAP = {'heat': heatpinn,
+                   'poipinn': poisspinn}
+    LOSS_MAP = {'heat': HeatPINN,
+                'poipinn': PoissPINN}
     ACTIVATION_MAP = {'relu' : nn.ReLU(),
                     'tanh' : nn.Tanh(),
                     'sigmoid': nn.Sigmoid(),
@@ -64,10 +66,15 @@ def train(**kwargs):
     # train part
     for epoch in range(opt.max_epoch + 1):
         optimizer.zero_grad()
-        datF = DATASET_MAP[opt.functional](num = 10000, data_type = 'collocation', device = device)
-        datI = DATASET_MAP[opt.functional](num = 400, data_type = 'initial', device = device)
-        datB = DATASET_MAP[opt.functional](num = 100, data_type = 'boundary', device = device)
-        loss = LOSS_MAP[opt.functional](model, datI, datB, datF) 
+        # datF = DATASET_MAP[opt.functional](num = 10000, data_type = 'collocation', device = device)
+        # datI = DATASET_MAP[opt.functional](num = 400, data_type = 'initial', device = device)
+        # datB = DATASET_MAP[opt.functional](num = 100, data_type = 'boundary', device = device)
+        # loss = LOSS_MAP[opt.functional](model, datI, datB, datF) 
+        
+        datI = DATASET_MAP[opt.functional](num = 1000, boundary = False, device = device)
+        datB = DATASET_MAP[opt.functional](num = 100, boundary = True, device = device)
+        loss = LOSS_MAP[opt.functional](model, datI, datB)
+        
         loss.backward()
         optimizer.step()
         # scheduler.step()

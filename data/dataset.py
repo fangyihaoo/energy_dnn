@@ -138,11 +138,11 @@ def allencahn(num: int = 1000,
         return data
     
     
-def poisspinn(num: int = 1000, 
+def heatpinn(num: int = 1000, 
               data_type: str = 'boundary', 
               device: str = 'cpu') ->Tensor:
     r""" 
-    2d poisson (0, pi)\times(-2/pi, 2/pi)\times(0,3) for PINN
+    2d poisson (0, pi)\times(-2/pi, 2/pi)\times(0,2) for PINN
     Boundary:  uniform on each boundary
     Interior: latin square sampling
 
@@ -178,4 +178,34 @@ def poisspinn(num: int = 1000,
         data = torch.cat((data, torch.rand(data.shape[0], 1)*2), dim = 1)
         return data.to(device)
 
+
+def poisspinn(num: int = 1000, 
+              boundary: bool = False, 
+              device: str = 'cpu') ->Tensor:
+    r""" 
+    2d poisson (0, pi)\times(-2/pi, 2/pi) for PINN
+    Boundary:  uniform on each boundary
+    Interior: latin square sampling
+
+    Args:
+        num (int, optional): number of data points. Defaults to 1000.
+        data_type (str, optional): boundary condition. Defaults to boundary.
+        device (str, optional): 'cuda' or 'cpu'. Defaults to 'cpu'.
+
+    Returns:
+        Tensor: (num, 3) dimension Tensor
+    """
     
+    if boundary:
+        tb = torch.cat((torch.rand(num, 1)* pi, torch.tensor([pi/2]).repeat(num)[:,None]), dim=1)
+        bb = torch.cat((torch.rand(num, 1)* pi, torch.tensor([-pi/2.]).repeat(num)[:,None]), dim=1)
+        rb = torch.cat((torch.tensor([pi]).repeat(num)[:,None], torch.rand(num, 1)*pi - pi/2), dim=1)
+        lb = torch.cat((torch.tensor([0.]).repeat(num)[:,None], torch.rand(num, 1)*pi - pi/2), dim=1)
+        data = torch.cat((tb, bb, rb, lb), dim=0)
+        return data.to(device)
+    
+    else: 
+        lb = np.array([0., -pi/2])
+        ran = np.array([pi, pi])
+        data = torch.from_numpy(ran*lhs(2, num) + lb).float()        # generate the interior points
+        return data.to(device)

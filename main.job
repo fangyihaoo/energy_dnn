@@ -7,4 +7,4 @@
 
 module load python
 
-python mainPinn.py train --model='FullNet' --functional='poi'  --max_epoch=5000 --FClayer=3 --num_input=3
+python mainPinn.py train --model='FullNet' --functional='poipinn'  --max_epoch=5000 --FClayer=3 --num_input=2 --grid='poiss2dgrid.pt'
