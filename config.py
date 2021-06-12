@@ -5,9 +5,9 @@ class DefaultConfig(object):
     default setting, can be changed via command line
     '''
 
-    model = 'ResNet'
+    model = 'FullNet'
 
-    functional = 'allenw'  # 'poi': PoiLoss   'allen' AllenCahnLoss
+    functional = 'poi'  # 'poi': PoiLoss   'allen' AllenCahnLoss
 
     FClayer = 2
 

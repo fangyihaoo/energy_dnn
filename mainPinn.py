@@ -64,8 +64,8 @@ def train(**kwargs):
     # train part
     for epoch in range(opt.max_epoch + 1):
         optimizer.zero_grad()
-        datF = DATASET_MAP[opt.functional](num = 5000, data_type = 'collocation', device = device)
-        datI = DATASET_MAP[opt.functional](num = 500, data_type = 'initial', device = device)
+        datF = DATASET_MAP[opt.functional](num = 10000, data_type = 'collocation', device = device)
+        datI = DATASET_MAP[opt.functional](num = 400, data_type = 'initial', device = device)
         datB = DATASET_MAP[opt.functional](num = 100, data_type = 'boundary', device = device)
         loss = LOSS_MAP[opt.functional](model, datI, datB, datF) 
         loss.backward()
