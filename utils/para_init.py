@@ -22,7 +22,7 @@ def weight_init(m):
             torch.nn.init.zeros_(m.bias)
     
     # if isinstance(m, nn.Linear):
-    #     gain = init.calculate_gain('tanh') 
+    #     gain = init.calculate_gain('relu') 
     #     init.xavier_normal_(m.weight.data, gain=gain)
     #     if m.bias is not None:
     #         torch.nn.init.zeros_(m.bias)

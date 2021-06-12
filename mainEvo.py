@@ -69,8 +69,8 @@ def train(**kwargs):
         init_path = osp.join(osp.dirname(osp.realpath(__file__)), 'checkpoints', opt.pretrain)
         modelold.load_state_dict(torch.load(init_path))
         with torch.no_grad():
-            previous.append(model(datI))
-            previous.append(model(datB))
+            previous.append(modelold(datI))
+            previous.append(modelold(datB))
     # -------------------------------------------------------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------------------------------------------------------

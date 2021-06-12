@@ -7,4 +7,4 @@
 
 module load python
 
-python mainErr.py train --model='ResNet' --functional='allen'  --max_epoch=30000 --pretrain=None
+python mainPinn.py train --model='FullNet' --functional='poi'  --max_epoch=20000 --FClayer=5 --num_input=3

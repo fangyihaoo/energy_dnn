@@ -27,7 +27,7 @@ class DefaultConfig(object):
 
     exact = 'poiss2dexact.pt'
 
-    grid = 'poiss2dgrid.pt'
+    grid = 'poiss2dgridpinn.pt'
     
     method = 'adam'
 

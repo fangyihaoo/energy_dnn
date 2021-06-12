@@ -6,18 +6,19 @@ from typing import Tuple
 
 
 def mesh2d(num: int, 
-            xlim: Tuple[float, float], 
-            ylim: Tuple[float, float]) -> Tensor:
-    '''
+           xlim: Tuple[float, float], 
+           ylim: Tuple[float, float]) -> Tensor:
+    """
     Generate meshgrid in square for 2d.
 
-    input:  
-        num: number of interval in one axis
-        xlim: left and right boundary for x-axis
-        ylim: lower and upper boundary for y-axis
+    Args:
+        num (int): number of interval in one axis
+        xlim (Tuple[float, float]): left and right boundary for x-axis
+        ylim (Tuple[float, float]): lower and upper boundary for y-axis
 
-    output: grid location (num*num, 2)
-    '''
+    Returns:
+        Tensor: grid location (num*num, 2)
+    """
 
     x = torch.linspace(xlim[0], xlim[1], num)
     y = torch.linspace(ylim[0], ylim[1], num)
@@ -29,56 +30,38 @@ def mesh2d(num: int,
 
 
 def poi2d(grid: Tensor) -> Tensor:
-    '''
+    """
     Generate exact solution according to the following 2D poisson equation in the meshgrid
     -\laplacia u = 2sin(x)cos(y),    u \in \Omega
     u = 0,              u \in \partial \Omega (0, pi) \times (-pi/2, pi/2)
 
     exact:  u = sin(x)cos(y)
 
-    input:  
-        grid: location of the grid tensor (N,  2)
+    Args:
+        grid (Tensor): location of the grid tensor (N,  2)
 
-    output: 
-        exact solution (N, 1)
-    '''
-
+    Returns:
+        Tensor: exact solution (N, 1)
+    """
+    
     return (torch.sin(grid[:,0])*torch.cos(grid[:,1])).unsqueeze_(1)
 
 
 
 def allen2d(grid: Tensor) -> Tensor:
-    '''
+    """
     Generate exact solution according to the following 1D Allen-Cahn type energy functional
-    
-
     exact:  \phi(x) = - tanh(x/(\sqrt(2)*\Epison))
+    Args:
+        grid (Tensor): location of the grid tensor (N, 2)
 
-    input:  
-        grid: location of the grid tensor (N, 2)
-
-    output: 
-        exact solution (N, 1)
-    '''
+    Returns:
+        Tensor: exact solution (N, 1)
+    """
 
     pass
 
 
-def allen1d(grid: Tensor) -> Tensor:
-    '''
-    Generate exact solution according to the following 1D Allen-Cahn type energy functional
-    
-
-    exact:  \phi(x) = - tanh(x/(\sqrt(2)*\Epison))
-
-    input:  
-        grid: location of the grid tensor (N, 2)
-
-    output: 
-        exact solution (N, 1)
-    '''
-
-    pass
 
 
 
@@ -86,10 +69,11 @@ def allen1d(grid: Tensor) -> Tensor:
 
 
 if __name__ == '__main__':
-    # Z = mesh2d(201, (0., pi), (-pi/2, pi/2))                  # poisson 2d
-    # exact = poi2d(Z)
-    # torch.save(Z, '../data/exact_sol/poiss2dgrid.pt')
+    Z = mesh2d(201, (0., pi), (-pi/2, pi/2))                  # poisson 2d
+    exact = poi2d(Z)
+    Z = torch.cat((Z, torch.tensor([1.5]).repeat(Z.shape[0])[:,None]), dim = 1)   # for pinn
+    torch.save(Z, '../data/exact_sol/poiss2dgridpinn.pt')
     # torch.save(exact, '../data/exact_sol/poiss2dexact.pt')
 
-    Z = mesh2d(201, (0., 1), (0, 1))
-    torch.save(Z, '../data/exact_sol/allen2dgrid.pt')
+    # Z = mesh2d(201, (0., 1), (0, 1))
+    # torch.save(Z, '../data/exact_sol/allen2dgrid.pt')

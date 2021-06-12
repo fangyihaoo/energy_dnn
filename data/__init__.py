@@ -1,1 +1,1 @@
-from .dataset import Poisson, AllenCahn, poisson, allencahn
+from .dataset import Poisson, AllenCahn, poisson, allencahn, poisspinn

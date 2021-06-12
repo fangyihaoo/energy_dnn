@@ -1,4 +1,5 @@
 import torch
+import torch.nn as nn
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from numpy import pi
@@ -44,9 +45,19 @@ sys.path.append(osp.dirname(osp.dirname(osp.abspath(__file__))))
 if __name__ == '__main__':
     from config import opt
     import models
+    ACTIVATION_MAP = {'relu' : nn.ReLU(),
+                'tanh' : nn.Tanh(),
+                'sigmoid': nn.Sigmoid(),
+                'leakyrelu': nn.LeakyReLU()}
+    keys = {'FClayer':opt.FClayer, 
+            'num_blocks':opt.num_blocks,
+            'activation':ACTIVATION_MAP[opt.act],
+            'num_input':opt.num_input,
+            'num_output':opt.num_oupt, 
+            'num_node':opt.num_node}
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model = getattr(models, opt.model)().eval()
-    model.load(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))), 'checkpoints', 'allencahn2dloss25000.pt'), dev = device)
+    model = getattr(models, opt.model)(**keys).eval()
+    model.load(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))), 'checkpoints', 'allencahn300.pt'), dev = device)
     x = torch.linspace(-1, 1, 101)
     y = torch.linspace(-1, 1, 101)
     X, Y = torch.meshgrid(x, y)
@@ -60,7 +71,7 @@ if __name__ == '__main__':
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)
     plt.colorbar(h, cax=cax)
-    plt.savefig(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))),'allencahn2dloss25000.png'))
+    plt.savefig(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))),'allencahn300.png'))
 
     # allencahn300
     #allencahn2dloss1001

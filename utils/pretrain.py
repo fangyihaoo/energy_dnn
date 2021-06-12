@@ -21,6 +21,10 @@ def elliptical(x: Tensor, y: Tensor):
     m = nn.Tanh()
     return (-m(10*(torch.sqrt(x**2 + 4*y**2) - 0.5))).reshape((-1, 1))
 
+def constant(x: Tensor, y: Tensor):
+    N = x.shape[0]
+    res = torch.tensor([-1.])
+    return res.repeat((N,1))
 
 def pretrain():
     # model configuration
@@ -45,19 +49,21 @@ def pretrain():
     y = torch.linspace(-1, 1, 101)
     X, Y = torch.meshgrid(x, y)
     Z = torch.cat((X.flatten()[:, None], Y.flatten()[:, None]), dim=1)
-    exact = elliptical(Z[:,0], Z[:,1])
+    # exact = constant(Z[:,0], Z[:,1])
 
     # train the initialization model
-    for _ in range(7000 + 1):
+    for _ in range(4000 + 1):
         optimizer.zero_grad()
         datI = allencahn(num = 2500, boundary = False, device = device)
         datB = allencahn(num = 100, boundary = True, device = device)
         out_i = model(datI)
         out_b = model(datB)
-        real_i = (elliptical(datI[:,0], datI[:,1])).reshape((-1,1))
-        real_b = (elliptical(datB[:,0], datB[:,1])).reshape((-1,1))
+        real_i = (constant(datI[:,0], datI[:,1])).reshape((-1,1))
+        real_b = (constant(datB[:,0], datB[:,1])).reshape((-1,1))
         loss = torch.mean((out_i - real_i)**2)
         loss += torch.mean((out_b - real_b)**2)
+        if _ % 500 == 0:
+            print(loss)
         loss.backward()
         optimizer.step()
 
@@ -72,8 +78,8 @@ def pretrain():
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)
     plt.colorbar(h, cax=cax)
-    plt.savefig(path + 'initialization.png')
-    model.save('init.pt')
+    plt.savefig(path + 'initconstant.png')
+    model.save('initconstant.pt')
 
 
 

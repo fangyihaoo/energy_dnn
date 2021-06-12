@@ -71,8 +71,8 @@ def train(**kwargs):
         init_path = osp.join(osp.dirname(osp.realpath(__file__)), 'checkpoints', opt.pretrain)
         modelold.load_state_dict(torch.load(init_path))
         with torch.no_grad():
-            previous.append(model(datI))
-            previous.append(model(datB))
+            previous.append(modelold(datI))
+            previous.append(modelold(datB))
     # -------------------------------------------------------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------------------------------------------------------
@@ -140,8 +140,6 @@ def eval(model: Callable[..., Tensor],
         # datB = DATASET_MAP[opt.functional](num = 25, boundary = True, device = device)
         # datI_loader = DataLoader(datI, 200, shuffle=True) # make sure that the dataloders are the same len for datI and datB
         # datB_loader = DataLoader(datB, 10, shuffle=True)
-
-
 
 
 
