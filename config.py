@@ -27,13 +27,13 @@ class DefaultConfig(object):
 
     exact = 'poiss2dexact.pt'
 
-    grid = 'poiss2dgridpinn.pt'
+    grid = 'poiss2dgrid.pt'
     
     method = 'adam'
 
     max_epoch = 1001 # number of epoch
 
-    lr = 1e-3 # initial learning rate
+    lr = 1e-4 # initial learning rate
 
     lr_decay = 0.5 # lr = lr*lr_decay
 

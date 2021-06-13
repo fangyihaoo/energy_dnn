@@ -71,14 +71,14 @@ def train(**kwargs):
         # datB = DATASET_MAP[opt.functional](num = 100, data_type = 'boundary', device = device)
         # loss = LOSS_MAP[opt.functional](model, datI, datB, datF) 
         
-        datI = DATASET_MAP[opt.functional](num = 1000, boundary = False, device = device)
+        datI = DATASET_MAP[opt.functional](num = 5000, boundary = False, device = device)
         datB = DATASET_MAP[opt.functional](num = 100, boundary = True, device = device)
         loss = LOSS_MAP[opt.functional](model, datI, datB)
         
         loss.backward()
         optimizer.step()
         # scheduler.step()
-        if epoch % 500 == 0:
+        if epoch % 1000 == 0:
             err = eval(model, grid, exact)
             print(f'Epoch: {epoch:05d}  Loss: {loss.item():.5f}   Error: {err.item():.5f}')
     model.save(f'poissonpinn{epoch}.pt')
