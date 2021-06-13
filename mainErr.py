@@ -97,8 +97,8 @@ def train(**kwargs):
         # ----------------------Optimization  step-----------------------
         while True:
             optimizer.zero_grad()
-            datI = DATASET_MAP[opt.functional](num = 80000, boundary = False, device = device)
-            datB = DATASET_MAP[opt.functional](num = 5500, boundary = True, device = device)
+            datI = DATASET_MAP[opt.functional](num = 1000, boundary = False, device = device)
+            datB = DATASET_MAP[opt.functional](num = 250, boundary = True, device = device)
             with torch.no_grad():
                 previous[0] = modelold(datI)
                 previous[1] = modelold(datB)

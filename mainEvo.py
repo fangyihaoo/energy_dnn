@@ -78,7 +78,8 @@ def train(**kwargs):
     op = Optim(model.parameters(), opt)
     optimizer = op.optimizer
     loss_meter = meter.AverageValueMeter()
-    timestamp = [10, 40, 300]
+    # timestamp = [10, 40, 300]
+    timestamp = [5000]
     energylist = []
     log_path = osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'evolution',  'energys.pt')
     # -------------------------------------------------------------------------------------------------------------------------------------
@@ -105,20 +106,20 @@ def train(**kwargs):
                 previous[1] = modelold(datB)
             loss = LOSS_MAP[opt.functional](model, datI, datB, previous) 
             loss[0].backward()
-            nn.utils.clip_grad_norm_(model.parameters(),  0.1)
+            # nn.utils.clip_grad_norm_(model.parameters(),  0.1)
             optimizer.step()
             scheduler.step()
             loss_meter.add(loss[1].item())
             step += 1
             if epoch in timestamp:
                 energys.append(loss[1].item())            
-            if abs((loss[1].item() - oldenergy)/oldenergy) < 1e-5 or step == 6000:
+            if abs((loss[1].item() - oldenergy)/oldenergy) < 1e-5 or step == 5:
                 break
             oldenergy = loss[1].item()
         print(step)
         if epoch in timestamp:
             energylist.append(energys)
-            model.save(f'allencahn{epoch}.pt')
+            model.save(f'poisson{epoch}.pt')
         modelold.load_state_dict(model.state_dict())
         # if epoch % 10 == 0:
         #     log = 'Epoch: {:05d}, Loss: {:.5f}'
@@ -131,7 +132,7 @@ def train(**kwargs):
 def eval(model: Callable[..., Tensor], 
         grid: Tensor, 
         exact: Tensor):
-    r"""
+    """
     Compute the relative L2 norm
     """
     model.eval()

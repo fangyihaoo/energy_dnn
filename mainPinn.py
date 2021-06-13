@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-# from torch.optim.lr_scheduler import StepLR
+from torch.optim.lr_scheduler import StepLR
 import models
 from data import heatpinn, poisspinn
 from utils import Optim
@@ -49,7 +49,7 @@ def train(**kwargs):
     if opt.load_model_path:
         model.load(opt.load_model_path)
     model.to(device)
-    model.apply(weight_init)
+    # model.apply(weight_init)
 
     # -------------------------------------------------------------------------------------------------------------------------------------
 
@@ -57,8 +57,8 @@ def train(**kwargs):
     # model optimizer and recorder
     op = Optim(model.parameters(), opt)
     optimizer = op.optimizer
-    # scheduler = StepLR(optimizer, step_size= opt.step_size, gamma = opt.lr_decay)
-    previous_err = 10000
+    scheduler = StepLR(optimizer, step_size= opt.step_size, gamma = opt.lr_decay)
+    previous_err = 20000
     best_epoch = 0
     # -------------------------------------------------------------------------------------------------------------------------------------
     
@@ -71,13 +71,14 @@ def train(**kwargs):
         # datB = DATASET_MAP[opt.functional](num = 100, data_type = 'boundary', device = device)
         # loss = LOSS_MAP[opt.functional](model, datI, datB, datF) 
         
-        datI = DATASET_MAP[opt.functional](num = 5000, boundary = False, device = device)
-        datB = DATASET_MAP[opt.functional](num = 100, boundary = True, device = device)
+        datI = DATASET_MAP[opt.functional](num = 1000, boundary = False, device = device)
+        datB = DATASET_MAP[opt.functional](num = 250, boundary = True, device = device)
         loss = LOSS_MAP[opt.functional](model, datI, datB)
         
         loss.backward()
+        nn.utils.clip_grad_norm_(model.parameters(),  100)
         optimizer.step()
-        # scheduler.step()
+        scheduler.step()
         if epoch % 1000 == 0:
             err = eval(model, grid, exact)
             print(f'Epoch: {epoch:05d}  Loss: {loss.item():.5f}   Error: {err.item():.5f}')

@@ -7,7 +7,8 @@ from numpy import pi
 
 def PoiLoss(model: Callable[..., Tensor], 
             dat_i: Tensor, 
-            dat_b: Tensor) -> Tensor:
+            dat_b: Tensor,
+            previous: List[Tensor]) -> Tensor:
     """
     Loss function for 2d Poisson equation
     -\laplacia u = 2sin(x)cos(y),    u \in \Omega
@@ -17,6 +18,7 @@ def PoiLoss(model: Callable[..., Tensor],
         model (Callable[..., Tensor]): Network 
         dat_i (Tensor): Interior point
         dat_b (Tensor): Boundary point
+        previous (Tuple[Tensor, Tensor]): Result from previous time step model. interior point for index 0, boundary for index 1
 
     Returns:
         Tensor: loss
@@ -30,8 +32,11 @@ def PoiLoss(model: Callable[..., Tensor],
     # f = (2*torch.sin(dat_i[:,0])*torch.cos(dat_i[:,1])).unsqueeze_(1)
     loss_i =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True)- f*output_i)
     loss_b = torch.mean(torch.pow(output_b,2))
+    
+    loss_p = 100*torch.mean(torch.pow(output_i - previous[0], 2))
+    loss_p += 100*torch.mean(torch.pow(output_b - previous[1], 2))
 
-    return loss_i + 500*loss_b
+    return loss_i + 500*loss_b + loss_p, loss_i
 
 
 def AllenCahn2dLoss(model: Callable[..., Tensor], 
@@ -64,8 +69,10 @@ def AllenCahn2dLoss(model: Callable[..., Tensor],
     loss_b += torch.mean(torch.pow((output_b[torch.logical_or(dat_b[:,1] == 1., dat_b[:,1] == -1),:]  - 1), 2))
     loss_p = 100*torch.mean(torch.pow(output_i - previous[0], 2))
     loss_p += 100*torch.mean(torch.pow(output_b - previous[1], 2))
+    
     return loss_i + 3000*loss_b + loss_p, loss_i
     # return loss_i + 1000*loss_b, loss_i
+
 
 def AllenCahnW(model: Callable[..., Tensor], 
                dat_i: Tensor, 
@@ -189,7 +196,7 @@ def PoissPINN(model: Callable[..., Tensor],
     f = (2*torch.sin(dat_i[:,0])*torch.cos(dat_i[:,1])).unsqueeze_(1)
     du = torch.autograd.grad(outputs = output_i, inputs = dat_i, grad_outputs = torch.ones_like(output_i), retain_graph=True, create_graph=True)[0]
     ddu = torch.autograd.grad(outputs = du, inputs = dat_i, grad_outputs = torch.ones_like(du), retain_graph=True, create_graph=True)[0]
-    loss = 500*torch.mean(torch.pow(output_b, 2))
+    loss = torch.mean(torch.pow(output_b, 2))
     loss += torch.mean(torch.pow(torch.sum(ddu, dim=1, keepdim=True) + f, 2))
     
     return loss
