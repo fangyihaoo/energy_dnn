@@ -49,7 +49,7 @@ def train(**kwargs):
     if opt.load_model_path:
         model.load(opt.load_model_path)
     model.to(device)
-    # model.apply(weight_init)
+    model.apply(weight_init)
 
     # -------------------------------------------------------------------------------------------------------------------------------------
 
@@ -59,7 +59,6 @@ def train(**kwargs):
     optimizer = op.optimizer
     scheduler = StepLR(optimizer, step_size= opt.step_size, gamma = opt.lr_decay)
     previous_err = 20000
-    best_epoch = 0
     # -------------------------------------------------------------------------------------------------------------------------------------
     
     # -------------------------------------------------------------------------------------------------------------------------------------
@@ -76,13 +75,16 @@ def train(**kwargs):
         loss = LOSS_MAP[opt.functional](model, datI, datB)
         
         loss.backward()
-        nn.utils.clip_grad_norm_(model.parameters(),  100)
+        # nn.utils.clip_grad_norm_(model.parameters(),  100)
         optimizer.step()
         scheduler.step()
-        if epoch % 1000 == 0:
+        if epoch % 500 == 0:
             err = eval(model, grid, exact)
-            print(f'Epoch: {epoch:05d}  Loss: {loss.item():.5f}   Error: {err.item():.5f}')
-    model.save(f'poissonpinn{epoch}.pt')
+            print(f'Epoch: {epoch:05d}   Error: {err.item():.5f}')
+            if err < previous_err:
+                previous_err = err
+                model.save(f'poissonpinn.pt')
+    
 
     # -------------------------------------------------------------------------------------------------------------------------------------
 

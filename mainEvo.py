@@ -59,11 +59,9 @@ def train(**kwargs):
     datB = DATASET_MAP[opt.functional](num = 100, boundary = True, device = device)
     previous = []
     if opt.pretrain is None:
-        ini_dat = torch.zeros_like(datI)
-        b_dat = torch.zeros_like(datB)
         with torch.no_grad():
-            previous.append(model(ini_dat))
-            previous.append(model(b_dat))
+            previous.append(model(datI))
+            previous.append(model(datB))
         modelold.load_state_dict(model.state_dict())
     else:
         init_path = osp.join(osp.dirname(osp.realpath(__file__)), 'checkpoints', opt.pretrain)

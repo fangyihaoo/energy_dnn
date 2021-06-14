@@ -5,7 +5,7 @@ class DefaultConfig(object):
     default setting, can be changed via command line
     '''
 
-    model = 'FullNet'
+    model = 'ResNet'
 
     functional = 'poi'  # 'poi': PoiLoss   'allen' AllenCahnLoss
 
@@ -33,11 +33,11 @@ class DefaultConfig(object):
 
     max_epoch = 1001 # number of epoch
 
-    lr = 1e-2 # initial learning rate
+    lr = 1e-3 # initial learning rate
 
     lr_decay = 0.5 # lr = lr*lr_decay
 
-    step_size = 5000
+    step_size = 3000
 
     momentum = 0.9 # Momentum for modified SGD
 

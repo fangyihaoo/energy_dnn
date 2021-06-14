@@ -191,9 +191,9 @@ def PoissPINN(model: Callable[..., Tensor],
     """
     
     output_b = model(dat_b)
+    f = (2*torch.sin(dat_i[:,0])*torch.cos(dat_i[:,1])).unsqueeze_(1)
     dat_i.requires_grad = True
     output_i = model(dat_i)
-    f = (2*torch.sin(dat_i[:,0])*torch.cos(dat_i[:,1])).unsqueeze_(1)
     du = torch.autograd.grad(outputs = output_i, inputs = dat_i, grad_outputs = torch.ones_like(output_i), retain_graph=True, create_graph=True)[0]
     ddu = torch.autograd.grad(outputs = du, inputs = dat_i, grad_outputs = torch.ones_like(du), retain_graph=True, create_graph=True)[0]
     loss = torch.mean(torch.pow(output_b, 2))
