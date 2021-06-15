@@ -3,7 +3,7 @@ import torch.nn as nn
 import models
 from data import poisson, allencahn
 from utils import Optim
-from utils import PoiLoss, AllenCahn2dLoss, AllenCahnW, AllenCahnLB
+from utils import PoiLoss,  PoiCycleLoss
 from utils import weight_init
 from torchnet import meter
 import os.path as osp
@@ -26,11 +26,9 @@ def train(**kwargs):
     # -------------------------------------------------------------------------------------------------------------------------------------
     # model configuration, modified the DATASET_MAP and LOSS_MAP according to your need
     DATASET_MAP = {'poi': poisson,
-                    'allenw': allencahn}
+                   'poissoncycle': allencahn}
     LOSS_MAP = {'poi':PoiLoss,
-                'allen': AllenCahn2dLoss,
-                'allenw': AllenCahnW,
-                'allenlb': AllenCahnLB}
+                'poissoncycle': PoiCycleLoss}
     ACTIVATION_MAP = {'relu' : nn.ReLU(),
                     'tanh' : nn.Tanh(),
                     'sigmoid': nn.Sigmoid(),
@@ -49,7 +47,7 @@ def train(**kwargs):
     if opt.load_model_path:
         model.load(opt.load_model_path)
     model.to(device)
-    model.apply(weight_init)
+    # model.apply(weight_init)
     modelold = getattr(models, opt.model)(**keys)
     modelold.to(device)
     datI = DATASET_MAP[opt.functional](num = 1000, boundary = False, device = device)
@@ -72,8 +70,8 @@ def train(**kwargs):
     # model optimizer and recorder
     op = Optim(model.parameters(), opt)
     optimizer = op.optimizer
-    timestamp = [3000, 6000, 9000, 12000, 15000, 18000]
-    previous_err = 20000
+    timestamp = [5000*i  for i in range(1, 10)]
+    error = []
     # -------------------------------------------------------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------------------------------------------------------
@@ -95,22 +93,22 @@ def train(**kwargs):
                 previous[1] = modelold(datB)
             loss = LOSS_MAP[opt.functional](model, datI, datB, previous) 
             loss[0].backward()
-            # nn.utils.clip_grad_norm_(model.parameters(),  0.1)
+            nn.utils.clip_grad_norm_(model.parameters(),  10)
             optimizer.step()
             step += 1        
-            if abs((loss[1].item() - oldenergy)/oldenergy) < 1e-5 or step == 10:
+            if abs((loss[1].item() - oldenergy)/oldenergy) < 1e-5 or step == 5000:
                 break
             oldenergy = loss[1].item()
         if epoch in timestamp:
             opt.lr = opt.lr * opt.lr_decay
-        if epoch % 500 == 0:
-            err = eval(model, grid, exact)
+        err = eval(model, grid, exact)
+        error.append(err)
+        if epoch % 1000 == 0:
             print(f'The epoch is {epoch}, The error is {err}')
-            if err < previous_err:
-                previous_err = err
-                model.save(f'poissonD.pt')
         modelold.load_state_dict(model.state_dict())
-
+    error = torch.FloatTensor(error)
+    torch.save(error, osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'decay', opt.functional + 'poissourmethod.pt'))
+    
     # -------------------------------------------------------------------------------------------------------------------------------------
 
 @torch.no_grad()

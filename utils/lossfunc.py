@@ -190,15 +190,79 @@ def PoissPINN(model: Callable[..., Tensor],
         Tensor: loss
     """
     
+    bd = lambda x, y : (torch.sin(x)*torch.cos(y)).unsqueeze_(1) # for the exact solution at boundary
+    
     output_b = model(dat_b)
     f = (2*torch.sin(dat_i[:,0])*torch.cos(dat_i[:,1])).unsqueeze_(1)
     dat_i.requires_grad = True
     output_i = model(dat_i)
     du = torch.autograd.grad(outputs = output_i, inputs = dat_i, grad_outputs = torch.ones_like(output_i), retain_graph=True, create_graph=True)[0]
     ddu = torch.autograd.grad(outputs = du, inputs = dat_i, grad_outputs = torch.ones_like(du), retain_graph=True, create_graph=True)[0]
-    loss = torch.mean(torch.pow(output_b, 2))
+    loss = torch.mean(torch.pow(output_b - bd(dat_b[:,0], dat_b[:,1]), 2))
     loss += torch.mean(torch.pow(torch.sum(ddu, dim=1, keepdim=True) + f, 2))
     
     return loss
     
     
+
+def PoissCyclePINN(model: Callable[..., Tensor], 
+              dat_i: Tensor, 
+              dat_b: Tensor) -> Tensor:
+    """The loss function for poisson equation with PINN (cycle)
+    
+    -\nabla u = 1,   u = 1 - 0.25(x^2 + y^2)
+
+    Args:
+        model (Callable[..., Tensor]): Network 
+        dat_i (Tensor): Interior points
+        dat_b (Tensor): Boundary points
+
+    Returns:
+        Tensor: loss
+    """
+    
+    bd = lambda x, y : (1 - 0.25*(x**2 + y**2)).unsqueeze_(1) # for the exact solution at boundary
+    
+    output_b = model(dat_b)
+    dat_i.requires_grad = True
+    output_i = model(dat_i)
+    du = torch.autograd.grad(outputs = output_i, inputs = dat_i, grad_outputs = torch.ones_like(output_i), retain_graph=True, create_graph=True)[0]
+    ddu = torch.autograd.grad(outputs = du, inputs = dat_i, grad_outputs = torch.ones_like(du), retain_graph=True, create_graph=True)[0]
+    loss = torch.mean(torch.pow(output_b - bd(dat_b[:,0], dat_b[:,1]), 2))
+    loss += torch.mean(torch.pow(torch.sum(ddu, dim=1, keepdim=True) + 1, 2))
+    
+    return loss
+
+
+    
+def PoiCycleLoss(model: Callable[..., Tensor], 
+            dat_i: Tensor, 
+            dat_b: Tensor,
+            previous: List[Tensor]) -> Tensor:
+    """
+    Loss function for 2d Poisson equation
+    -\laplacia u = 1,    u \in \Omega
+    u = 0,                           u \in \partial \Omega x^2 + y^2 = 1
+
+    Args:
+        model (Callable[..., Tensor]): Network 
+        dat_i (Tensor): Interior point
+        dat_b (Tensor): Boundary point
+        previous (Tuple[Tensor, Tensor]): Result from previous time step model. interior point for index 0, boundary for index 1
+
+    Returns:
+        Tensor: loss
+    """
+    bd = lambda x, y : (1 - 0.25*(x**2 + y**2)).unsqueeze_(1) # for the exact solution at boundary
+
+    dat_i.requires_grad = True
+    output_i = model(dat_i)
+    output_b = model(dat_b)
+    ux = torch.autograd.grad(outputs = output_i, inputs = dat_i, grad_outputs = torch.ones_like(output_i), retain_graph=True, create_graph=True)[0]
+    loss_i =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True) - output_i)
+    loss_b = torch.mean(torch.pow(output_b - bd(dat_b[:,0], dat_b[:,1]),2))
+    
+    loss_p = 100*torch.mean(torch.pow(output_i - previous[0], 2))
+    loss_p += 100*torch.mean(torch.pow(output_b - previous[1], 2))
+
+    return loss_i + 500*loss_b + loss_p, loss_i

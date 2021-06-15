@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 from torch.optim.lr_scheduler import StepLR
 import models
-from data import heatpinn, poisspinn
+from data import poisson
 from utils import Optim
-from utils import HeatPINN, PoissPINN
+from utils import PoissPINN, PoissCyclePINN
 from utils import weight_init
 from torchnet import meter
 import os.path as osp
@@ -27,10 +27,10 @@ def train(**kwargs):
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # model configuration, modified the DATASET_MAP and LOSS_MAP according to your need
-    DATASET_MAP = {'heat': heatpinn,
-                   'poipinn': poisspinn}
-    LOSS_MAP = {'heat': HeatPINN,
-                'poipinn': PoissPINN}
+    DATASET_MAP = {'poi': poisson,
+                   'poissoncycle': allencahn}
+    LOSS_MAP = {'poi': PoissPINN,
+                'poissoncycle': PoissCyclePINN}
     ACTIVATION_MAP = {'relu' : nn.ReLU(),
                     'tanh' : nn.Tanh(),
                     'sigmoid': nn.Sigmoid(),
@@ -49,7 +49,7 @@ def train(**kwargs):
     if opt.load_model_path:
         model.load(opt.load_model_path)
     model.to(device)
-    model.apply(weight_init)
+    # model.apply(weight_init)
 
     # -------------------------------------------------------------------------------------------------------------------------------------
 
@@ -58,32 +58,25 @@ def train(**kwargs):
     op = Optim(model.parameters(), opt)
     optimizer = op.optimizer
     scheduler = StepLR(optimizer, step_size= opt.step_size, gamma = opt.lr_decay)
-    previous_err = 20000
+    error = []
     # -------------------------------------------------------------------------------------------------------------------------------------
     
     # -------------------------------------------------------------------------------------------------------------------------------------
     # train part
     for epoch in range(opt.max_epoch + 1):
         optimizer.zero_grad()
-        # datF = DATASET_MAP[opt.functional](num = 10000, data_type = 'collocation', device = device)
-        # datI = DATASET_MAP[opt.functional](num = 400, data_type = 'initial', device = device)
-        # datB = DATASET_MAP[opt.functional](num = 100, data_type = 'boundary', device = device)
-        # loss = LOSS_MAP[opt.functional](model, datI, datB, datF) 
-        
         datI = DATASET_MAP[opt.functional](num = 1000, boundary = False, device = device)
         datB = DATASET_MAP[opt.functional](num = 250, boundary = True, device = device)
         loss = LOSS_MAP[opt.functional](model, datI, datB)
-        
         loss.backward()
-        # nn.utils.clip_grad_norm_(model.parameters(),  100)
         optimizer.step()
         scheduler.step()
-        if epoch % 500 == 0:
-            err = eval(model, grid, exact)
+        err = eval(model, grid, exact)
+        error.append(err)
+        if epoch % 500 == 0:            
             print(f'Epoch: {epoch:05d}   Error: {err.item():.5f}')
-            if err < previous_err:
-                previous_err = err
-                model.save(f'poissonpinn.pt')
+    error = torch.FloatTensor(error)
+    torch.save(error, osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'decay', opt.functional + 'poisspinn.pt'))
     
 
     # -------------------------------------------------------------------------------------------------------------------------------------

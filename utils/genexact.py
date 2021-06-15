@@ -48,10 +48,10 @@ def poi2d(grid: Tensor) -> Tensor:
 
 
 
-def allen2d(grid: Tensor) -> Tensor:
+def poiss2dcyc(grid: Tensor) -> Tensor:
     """
     Generate exact solution according to the following 1D Allen-Cahn type energy functional
-    exact:  \phi(x) = - tanh(x/(\sqrt(2)*\Epison))
+    exact:  u = 1 - 0.25*(x^2 + y^2)
     Args:
         grid (Tensor): location of the grid tensor (N, 2)
 
@@ -59,7 +59,7 @@ def allen2d(grid: Tensor) -> Tensor:
         Tensor: exact solution (N, 1)
     """
 
-    pass
+    return (1 - 0.25*(grid[:,0]**2 + grid[:,1]**2)).unsqueeze_(1)
 
 
 
@@ -69,11 +69,12 @@ def allen2d(grid: Tensor) -> Tensor:
 
 
 if __name__ == '__main__':
-    Z = mesh2d(201, (0., pi), (-pi/2, pi/2))                  # poisson 2d
-    exact = poi2d(Z)
-    Z = torch.cat((Z, torch.tensor([2.]).repeat(Z.shape[0])[:,None]), dim = 1)   # for pinn
-    torch.save(Z, '../data/exact_sol/poiss2dgridpinn.pt')
+    # Z = mesh2d(101, (0., pi), (-pi/2, pi/2))                  # poisson 2d
+    # exact = poi2d(Z)
+    # torch.save(Z, '../data/exact_sol/poiss2dgrid.pt')
     # torch.save(exact, '../data/exact_sol/poiss2dexact.pt')
 
-    # Z = mesh2d(201, (0., 1), (0, 1))
-    # torch.save(Z, '../data/exact_sol/allen2dgrid.pt')
+    Z = mesh2d(101, (-1., 1.), (-1., 1.))                  # poisson 2d
+    exact = poiss2dcyc(Z)
+    torch.save(Z, '../data/exact_sol/poiss2dcyclegrid.pt')
+    torch.save(exact, '../data/exact_sol/poiss2dcycleexact.pt')
