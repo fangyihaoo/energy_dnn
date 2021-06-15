@@ -37,7 +37,7 @@ class DefaultConfig(object):
 
     lr_decay = 0.5 # lr = lr*lr_decay
 
-    step_size = 3000
+    step_size = 5000
 
     momentum = 0.9 # Momentum for modified SGD
 
