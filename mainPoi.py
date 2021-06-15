@@ -39,6 +39,8 @@ def train(**kwargs):
             'num_input':opt.num_input,
             'num_output':opt.num_oupt, 
             'num_node':opt.num_node}
+    gendat = DATASET_MAP[opt.functional]
+    losfunc = LOSS_MAP[opt.functional]
     # -------------------------------------------------------------------------------------------------------------------------------------
     
     # -------------------------------------------------------------------------------------------------------------------------------------
@@ -50,8 +52,8 @@ def train(**kwargs):
     # model.apply(weight_init)
     modelold = getattr(models, opt.model)(**keys)
     modelold.to(device)
-    datI = DATASET_MAP[opt.functional](num = 1000, boundary = False, device = device)
-    datB = DATASET_MAP[opt.functional](num = 250, boundary = True, device = device)
+    datI = gendat(num = 1000, boundary = False, device = device)
+    datB = gendat(num = 250, boundary = True, device = device)
     previous = []
     if opt.pretrain is None:
         with torch.no_grad():
@@ -86,12 +88,12 @@ def train(**kwargs):
         # --------------Optimization Loop at each time step--------------
         while True:
             optimizer.zero_grad()
-            datI = DATASET_MAP[opt.functional](num = 1000, boundary = False, device = device)
-            datB = DATASET_MAP[opt.functional](num = 100, boundary = True, device = device)
+            datI = gendat(num = 1000, boundary = False, device = device)
+            datB = gendat(num = 100, boundary = True, device = device)
             with torch.no_grad():
                 previous[0] = modelold(datI)
                 previous[1] = modelold(datB)
-            loss = LOSS_MAP[opt.functional](model, datI, datB, previous) 
+            loss = losfunc(model, datI, datB, previous) 
             loss[0].backward()
             nn.utils.clip_grad_norm_(model.parameters(),  10)
             optimizer.step()

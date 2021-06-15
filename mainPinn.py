@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch.optim.lr_scheduler import StepLR
 import models
-from data import poisson
+from data import poisson, allencahn
 from utils import Optim
 from utils import PoissPINN, PoissCyclePINN
 from utils import weight_init
@@ -41,6 +41,8 @@ def train(**kwargs):
             'num_input':opt.num_input,
             'num_output':opt.num_oupt, 
             'num_node':opt.num_node}
+    gendat = DATASET_MAP[opt.functional]
+    losfunc = LOSS_MAP[opt.functional]
     # -------------------------------------------------------------------------------------------------------------------------------------
     
     # -------------------------------------------------------------------------------------------------------------------------------------
@@ -65,9 +67,9 @@ def train(**kwargs):
     # train part
     for epoch in range(opt.max_epoch + 1):
         optimizer.zero_grad()
-        datI = DATASET_MAP[opt.functional](num = 1000, boundary = False, device = device)
-        datB = DATASET_MAP[opt.functional](num = 250, boundary = True, device = device)
-        loss = LOSS_MAP[opt.functional](model, datI, datB)
+        datI = gendat(num = 1000, boundary = False, device = device)
+        datB = gendat(num = 250, boundary = True, device = device)
+        loss = losfunc(model, datI, datB)
         loss.backward()
         optimizer.step()
         scheduler.step()
