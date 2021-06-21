@@ -7,4 +7,4 @@
 
 module load python
 
-python mainPinn.py train --model='FullNet' --functional='poissoncycle'  --max_epoch=50000 --pretrain=None --FClayer=1 --num_node=10 --exact='poiss2dcycleexact.pt' --grid='poiss2dcyclegrid.pt'
+python mainHeat.py train --model='FullNet' --functional='heat'  --max_epoch=100 --pretrain='heat.pt' --grid='heatgrid.pt' --num_node=20 --max_epoch=21

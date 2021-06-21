@@ -1,39 +1,35 @@
 import torch
 import torch.nn as nn
-from torch.optim.lr_scheduler import StepLR
 import models
 from data import poisson, allencahn
+from torch.optim.lr_scheduler import StepLR
 from utils import Optim
-from utils import PoiLoss, AllenCahn2dLoss, AllenCahnW, AllenCahnLB
+from utils import PoiLoss,  PoiCycleLoss
 from utils import weight_init
-# from torch.utils.data import DataLoader
 from torchnet import meter
 import os.path as osp
 from typing import Callable
 from torch import Tensor
 from config import opt
 
+
 def train(**kwargs):
     # -------------------------------------------------------------------------------------------------------------------------------------
     # load the exact solution if exist
     opt._parse(kwargs)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    # exactpath1 = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', 'allen2dexact1.pt')
-    # exactpath2 = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', 'allen2dexact2.pt')
-    # gridpath = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', 'allen2dgrid.pt')
-    # grid = torch.load(gridpath, map_location = device)
-    # exact1 = torch.load(exactpath1, map_location = device)
-    # exact2 = torch.load(exactpath2, map_location = device)
+    exactpath = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', opt.exact)
+    gridpath = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', opt.grid)
+    grid = torch.load(gridpath, map_location = device)
+    exact = torch.load(exactpath, map_location = device)
     # -------------------------------------------------------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # model configuration, modified the DATASET_MAP and LOSS_MAP according to your need
     DATASET_MAP = {'poi': poisson,
-                    'allenw': allencahn}
+                   'poissoncycle': allencahn}
     LOSS_MAP = {'poi':PoiLoss,
-                'allen': AllenCahn2dLoss,
-                'allenw': AllenCahnW,
-                'allenlb': AllenCahnLB}
+                'poissoncycle': PoiCycleLoss}
     ACTIVATION_MAP = {'relu' : nn.ReLU(),
                     'tanh' : nn.Tanh(),
                     'sigmoid': nn.Sigmoid(),
@@ -54,11 +50,11 @@ def train(**kwargs):
     if opt.load_model_path:
         model.load(opt.load_model_path)
     model.to(device)
-    model.apply(weight_init)
+    # model.apply(weight_init)
     modelold = getattr(models, opt.model)(**keys)
     modelold.to(device)
-    datI = gendat(num = 2500, boundary = False, device = device)
-    datB = gendat(num = 100, boundary = True, device = device)
+    datI = gendat(num = 1000, boundary = False, device = device)
+    datB = gendat(num = 250, boundary = True, device = device)
     previous = []
     if opt.pretrain is None:
         with torch.no_grad():
@@ -77,54 +73,30 @@ def train(**kwargs):
     # model optimizer and recorder
     op = Optim(model.parameters(), opt)
     optimizer = op.optimizer
-    loss_meter = meter.AverageValueMeter()
-    timestamp = [10, 40, 300]
-    energylist = []
-    log_path = osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'evolution',  'energys.pt')
+    scheduler = StepLR(optimizer, step_size= opt.step_size, gamma = opt.lr_decay)
+    error = []
     # -------------------------------------------------------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # train part
     for epoch in range(opt.max_epoch + 1):
         # ---------------training setup in each time step---------------
-        loss_meter.reset()
-        energys = []
-        step = 0
-        op = Optim(model.parameters(), opt)
-        optimizer = op.optimizer
-        scheduler = StepLR(optimizer, step_size=opt.step_size, gamma=opt.lr_decay)
-        oldenergy = 1e-8
         # ---------------------------------------------------------------
         # --------------Optimization Loop at each time step--------------
-        while True:
-            optimizer.zero_grad()
-            datI = gendat(num = 2500, boundary = False, device = device)
-            datB = gendat(num = 100, boundary = True, device = device)
-            with torch.no_grad():
-                previous[0] = modelold(datI)
-                previous[1] = modelold(datB)
-            loss = losfunc(model, datI, datB, previous) 
-            loss[0].backward()
-            nn.utils.clip_grad_norm_(model.parameters(),  0.1)
-            optimizer.step()
-            scheduler.step()
-            loss_meter.add(loss[1].item())
-            step += 1
-            if epoch in timestamp:
-                energys.append(loss[1].item())            
-            if abs((loss[1].item() - oldenergy)/oldenergy) < 1e-5 or step == 5:
-                break
-            oldenergy = loss[1].item()
-        print(step)
-        if epoch in timestamp:
-            energylist.append(energys)
-            model.save(f'poisson{epoch}.pt')
-        modelold.load_state_dict(model.state_dict())
-        if epoch % 10 == 0:
-            log = 'Epoch: {:05d}, Loss: {:.5f}'
-            print(log.format(epoch, torch.tensor(loss_meter.value()[0])))
-    torch.save(energylist, log_path)
-
+        optimizer.zero_grad()
+        datI = gendat(num = 1000, boundary = False, device = device)
+        datB = gendat(num = 250, boundary = True, device = device)
+        loss = losfunc(model, datI, datB, previous) 
+        loss[0].backward()
+        optimizer.step()
+        scheduler.step()
+        err = eval(model, grid, exact)
+        error.append(err)
+        if epoch % 1000 == 0:
+            print(f'The epoch is {epoch}, The error is {err}')
+    error = torch.FloatTensor(error)
+    torch.save(error, osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'decay', opt.functional + 'poissDritz.pt'))
+    
     # -------------------------------------------------------------------------------------------------------------------------------------
 
 @torch.no_grad()
@@ -142,10 +114,6 @@ def eval(model: Callable[..., Tensor],
 
 
 
-        # datI = DATASET_MAP[opt.functional](num = 2000, boundary = False, device = device)
-        # datB = DATASET_MAP[opt.functional](num = 25, boundary = True, device = device)
-        # datI_loader = DataLoader(datI, 200, shuffle=True) # make sure that the dataloders are the same len for datI and datB
-        # datB_loader = DataLoader(datB, 10, shuffle=True)
 
 
 
@@ -171,4 +139,3 @@ def help():
 if __name__=='__main__':
     import fire
     fire.Fire()
-

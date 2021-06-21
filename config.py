@@ -5,7 +5,7 @@ class DefaultConfig(object):
     default setting, can be changed via command line
     '''
 
-    model = 'ResNet'
+    model = 'FullNet'
 
     functional = 'poi'  # 'poi': PoiLoss   'allen' AllenCahnLoss
 
@@ -17,7 +17,7 @@ class DefaultConfig(object):
 
     num_oupt = 1
 
-    num_node = 10
+    num_node = 20
 
     act = 'tanh'  # tanh,  relu,  sigmoid,  leakyrelu
 

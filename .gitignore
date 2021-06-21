@@ -4,6 +4,7 @@
 /log/*.png
 /log/loss
 /log/evolution
+/log/decay
 /draftCode
 /checkpoints/*.pt
 /*.png

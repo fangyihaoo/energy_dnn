@@ -72,7 +72,7 @@ def train(**kwargs):
     # model optimizer and recorder
     op = Optim(model.parameters(), opt)
     optimizer = op.optimizer
-    timestamp = [5000*i  for i in range(1, 10)]
+    timestamp = [20*i  for i in range(1, 10)]
     error = []
     # -------------------------------------------------------------------------------------------------------------------------------------
 
@@ -89,23 +89,24 @@ def train(**kwargs):
         while True:
             optimizer.zero_grad()
             datI = gendat(num = 1000, boundary = False, device = device)
-            datB = gendat(num = 100, boundary = True, device = device)
+            datB = gendat(num = 250, boundary = True, device = device)
             with torch.no_grad():
                 previous[0] = modelold(datI)
                 previous[1] = modelold(datB)
             loss = losfunc(model, datI, datB, previous) 
             loss[0].backward()
-            nn.utils.clip_grad_norm_(model.parameters(),  10)
+            # nn.utils.clip_grad_norm_(model.parameters(),  1)
             optimizer.step()
-            step += 1        
-            if abs((loss[1].item() - oldenergy)/oldenergy) < 1e-5 or step == 5000:
+            step += 1
+            err = eval(model, grid, exact)
+            error.append(err)        
+            if step == 500:
                 break
             oldenergy = loss[1].item()
         if epoch in timestamp:
             opt.lr = opt.lr * opt.lr_decay
-        err = eval(model, grid, exact)
-        error.append(err)
-        if epoch % 1000 == 0:
+
+        if epoch % 5 == 0:
             print(f'The epoch is {epoch}, The error is {err}')
         modelold.load_state_dict(model.state_dict())
     error = torch.FloatTensor(error)
@@ -128,10 +129,6 @@ def eval(model: Callable[..., Tensor],
 
 
 
-        # datI = DATASET_MAP[opt.functional](num = 2000, boundary = False, device = device)
-        # datB = DATASET_MAP[opt.functional](num = 25, boundary = True, device = device)
-        # datI_loader = DataLoader(datI, 200, shuffle=True) # make sure that the dataloders are the same len for datI and datB
-        # datB_loader = DataLoader(datB, 10, shuffle=True)
 
 
 

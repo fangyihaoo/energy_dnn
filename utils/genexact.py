@@ -74,7 +74,13 @@ if __name__ == '__main__':
     # torch.save(Z, '../data/exact_sol/poiss2dgrid.pt')
     # torch.save(exact, '../data/exact_sol/poiss2dexact.pt')
 
-    Z = mesh2d(101, (-1., 1.), (-1., 1.))                  # poisson 2d
-    exact = poiss2dcyc(Z)
-    torch.save(Z, '../data/exact_sol/poiss2dcyclegrid.pt')
-    torch.save(exact, '../data/exact_sol/poiss2dcycleexact.pt')
+    # Z = mesh2d(101, (-1., 1.), (-1., 1.))                  # poisson 2d
+    # exact = poiss2dcyc(Z)
+    # torch.save(Z, '../data/exact_sol/poiss2dcyclegrid.pt')
+    # torch.save(exact, '../data/exact_sol/poiss2dcycleexact.pt')
+    
+    Z = mesh2d(101, (0., 2.), (0., 2.))                  # heat 2d
+    # exact = poiss2dcyc(Z)
+    torch.save(Z, '../data/exact_sol/heatgrid.pt')
+    # torch.save(exact, '../data/exact_sol/poiss2dcycleexact.pt')
+    
