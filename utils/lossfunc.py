@@ -328,10 +328,10 @@ def Heat(model: Callable[...,Tensor],
     output_i = model(dat_i)
     output_b = model(dat_b)
     ux = torch.autograd.grad(outputs = output_i, inputs = dat_i, grad_outputs = torch.ones_like(output_i), retain_graph=True, create_graph=True)[0]
-    loss_i =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True))
+    loss_i =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True)) * 4
     loss_b = torch.mean(torch.pow(output_b,2))
     
-    loss_p = 100*torch.mean(torch.pow(output_i - previous[0], 2))
+    loss_p = 100*torch.mean(torch.pow(output_i - previous[0], 2)) * 4
     # loss_p += 100*torch.mean(torch.pow(output_b - previous[1], 2))
 
     return loss_i + 500*loss_b + loss_p, loss_i
