@@ -206,6 +206,30 @@ def heat(num: int = 1000,
         data = torch.from_numpy(lhs(2, num)*2).float().to(device)        # generate the interior points
         return data
     
+def HeatFix(grid: Tensor,
+        boundary: bool = False,
+        device: str = 'cpu') -> Tensor:
+    """
+    Fixed sample for heat equation
+
+    Args:
+        grid (Tensor): tensor of grid 
+        boundary (bool, optional): [boundary or not]. Defaults to False.
+        device (str, optional): [cpu or cuda]. Defaults to 'cpu'.
+
+    Returns:
+        Tensor: [tensor of location]
+    """
+    if boundary:
+        lrb = grid[torch.logical_or(grid[:,0] == 0., grid[:,0] == 2),:]
+        tbb = grid[torch.logical_or(grid[:,1] == 0., grid[:,1] == 2),:]
+        data = torch.cat((lrb, tbb), dim = 0)
+        return data.to(device)
+    else:
+        data = grid[torch.logical_and(grid[:,0] != 0., grid[:,0] != 2),:]
+        data = data[torch.logical_and(data[:,1] != 0., data[:,1] != 2),:]
+        return data.to(device)       
+    
     
 
 

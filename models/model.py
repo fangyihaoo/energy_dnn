@@ -20,7 +20,10 @@ class ResBlock(nn.Module):
         self.activate = activate
         self.linears_list = [nn.Linear(num_node, num_node) for i in range(num_fc)]
         self.acti_list = [self.activate for i in range(num_fc)]
-        self.block = nn.Sequential(*[item for pair in zip(self.linears_list, self.acti_list) for item in pair])
+        self.norm = [nn.BatchNorm1d(num_features=num_node) for i in range(num_fc)]
+        block = [item for x in zip(linears_list, norm, acti_list) for item in x]
+        self.block = nn.Sequential(*block)
+        # self.block = nn.Sequential(*[item for pair in zip(self.linears_list, self.acti_list) for item in pair])
 
     def forward(self, x):
         residual = x

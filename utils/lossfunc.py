@@ -206,8 +206,8 @@ def PoissPINN(model: Callable[..., Tensor],
     
 
 def PoissCyclePINN(model: Callable[..., Tensor], 
-              dat_i: Tensor, 
-              dat_b: Tensor) -> Tensor:
+                   dat_i: Tensor, 
+                   dat_b: Tensor) -> Tensor:
     """The loss function for poisson equation with PINN (cycle)
     
     -\nabla u = 1,   u = 1 - 0.25(x^2 + y^2)
@@ -331,7 +331,7 @@ def Heat(model: Callable[...,Tensor],
     loss_i =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True))
     loss_b = torch.mean(torch.pow(output_b,2))
     
-    loss_p = 100*torch.mean(torch.pow(output_i - previous[0], 2))
-    loss_p += 100*torch.mean(torch.pow(output_b - previous[1], 2))
+    loss_p = 1000*torch.mean(torch.pow(output_i - previous[0], 2))
+    loss_p += 1000*torch.mean(torch.pow(output_b - previous[1], 2))
 
     return loss_i + 500*loss_b + loss_p, loss_i

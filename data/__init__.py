@@ -1,1 +1,1 @@
-from .dataset import Poisson, AllenCahn, poisson, allencahn, heatpinn, heat
+from .dataset import Poisson, AllenCahn, poisson, allencahn, heatpinn, heat, HeatFix

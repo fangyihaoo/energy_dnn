@@ -1,7 +1,8 @@
 import torch
 import torch.nn as nn
+from torch.optim.lr_scheduler import StepLR
 import models
-from data import heat
+from data import heat, HeatFix
 from utils import Optim
 from utils import Heat
 from utils import weight_init
@@ -31,7 +32,7 @@ def Series_Sum(x, y, t, m, n):
     for i in np.linspace(1, m, m):
         for j in np.linspace(1, n, n):
             res += kernel(x, y, t, i, j)
-        # print(res)
+            # print(res)
     return 200*res/(pi**2)
 # -------------------------------------------------------------------------------------------------------------------------------------
 
@@ -44,11 +45,12 @@ def train(**kwargs):
     gridpath = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', opt.grid)
     grid = torch.load(gridpath, map_location = 'cpu')
     grid = grid.numpy()
-    timestamp = [20, 100, 200]
+    # timestamp = [2, 20, 40]
+    timestamp = list(range(0, 301))
     m, n = 100, 100
     exact = []
     for step in timestamp:
-        tmp = [Series_Sum(i[0], i[1], step*0.005, m, n) for i in grid]
+        tmp = [Series_Sum(i[0], i[1], step*0.0005, m, n) for i in grid]
         tmp = torch.tensor(tmp, device = device, dtype=torch.float32)
         exact.append(tmp.unsqueeze_(1))
     grid = torch.tensor(grid, device = device, dtype=torch.float32)
@@ -80,8 +82,11 @@ def train(**kwargs):
     modelold = getattr(models, opt.model)(**keys)
     modelold.to(device)
     error = []
-    datI = gendat(num = 1000, boundary = False, device = device)
-    datB = gendat(num = 250, boundary = True, device = device)
+    datI = gendat(num = 2500, boundary = False, device = device)
+    datB = gendat(num = 500, boundary = True, device = device)
+    # datI = HeatFix(grid, boundary = False, device = device)
+    # datB = HeatFix(grid, boundary = True, device = device)
+    
     previous = []
     if opt.pretrain is None:
         with torch.no_grad():
@@ -103,29 +108,42 @@ def train(**kwargs):
         step = 0
         op = Optim(model.parameters(), opt)
         optimizer = op.optimizer
+        scheduler = StepLR(optimizer, step_size=opt.step_size, gamma=opt.lr_decay)
         oldenergy = 1e-8
         # ---------------------------------------------------------------
         # --------------Optimization Loop at each time step--------------
         while True:
             optimizer.zero_grad()
-            datI = gendat(num = 1000, boundary = False, device = device)
-            datB = gendat(num = 250, boundary = True, device = device)
+            datI = gendat(num = 2500, boundary = False, device = device)
+            datB = gendat(num = 500, boundary = True, device = device)
+            
+            # datI = HeatFix(grid, boundary = False, device = device)
+            # datB = HeatFix(grid, boundary = True, device = device)
             with torch.no_grad():
                 previous[0] = modelold(datI)
                 previous[1] = modelold(datB)
             loss = losfunc(model, datI, datB, previous) 
             loss[0].backward()
-            nn.utils.clip_grad_norm_(model.parameters(),  0.1)
+            total_norm = torch.norm(torch.stack([torch.norm(p.grad.detach()).to(device) for p in model.parameters()]))
+            # if step % 100 == 0:
+            #     print(f'the total norm is {total_norm}')
+            # nn.utils.clip_grad_norm_(model.parameters(),  1)
             optimizer.step()
+            scheduler.step()
             step += 1      
-            if step == 5000:
+            if total_norm < 1e-4 or step == 1200:
                 break
-            oldenergy = loss[1].item()
+            # if step == 2000:
+            #     break
+            # oldenergy = loss[1].item()
         if epoch in timestamp:
-            opt.lr = opt.lr * opt.lr_decay
-            print(eval(model, grid, exact[timestamp.index(epoch)]))
-            model.save(f'heat{epoch}.pt')
-        modelold.load_state_dict(model.state_dict())            
+            # opt.lr = opt.lr * opt.lr_decay
+            error.append(eval(model, grid, exact[timestamp.index(epoch)]))
+            print(eval(model, grid, exact[timestamp.index(epoch)]), '===============================================================')
+            # model.save(f'heat{epoch}.pt')
+        modelold.load_state_dict(model.state_dict()) 
+    print('=============================103====norm================')
+    # torch.save(error, 'error102fixbig.pt')
             
     
     # -------------------------------------------------------------------------------------------------------------------------------------

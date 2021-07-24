@@ -8,6 +8,7 @@
 /draftCode
 /checkpoints/*.pt
 /*.png
+/*.pt
 
 # General
 .DS_Store

@@ -5,7 +5,7 @@ class DefaultConfig(object):
     default setting, can be changed via command line
     '''
 
-    model = 'FullNet'
+    model = 'ResNet'
 
     functional = 'poi'  # 'poi': PoiLoss   'allen' AllenCahnLoss
 
@@ -17,7 +17,7 @@ class DefaultConfig(object):
 
     num_oupt = 1
 
-    num_node = 20
+    num_node = 10
 
     act = 'tanh'  # tanh,  relu,  sigmoid,  leakyrelu
 
@@ -37,7 +37,7 @@ class DefaultConfig(object):
 
     lr_decay = 0.5 # lr = lr*lr_decay
 
-    step_size = 5000
+    step_size = 1500
 
     momentum = 0.9 # Momentum for modified SGD
 

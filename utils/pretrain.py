@@ -66,7 +66,7 @@ def pretrain():
     # exact = constant(Z[:,0], Z[:,1])
     
     # train the initialization model
-    for _ in range(50000 + 1):
+    for _ in range(10000 + 1):
         optimizer.zero_grad()
         datI = heat(num = 20000, boundary = False, device = device)
         datB = heat(num = 1000, boundary = True, device = device)
