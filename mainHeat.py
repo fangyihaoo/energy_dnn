@@ -43,17 +43,18 @@ def train(**kwargs):
     opt._parse(kwargs)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     gridpath = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', opt.grid)
+    exactpath = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', opt.exact)
     grid = torch.load(gridpath, map_location = device)
-    exact = torch.load(gridpath, map_location = device)
+    exact = torch.load(exactpath, map_location = device)
     
     # fix gird
     # --------------------------------------------------------------------
-    datI =  grid[torch.logical_and(grid[:,0] != 0., grid[:,0] != 2),:]
-    datI = datI[torch.logical_and(datI[:,1] != 0., datI[:,1] != 2),:]
+    # datI =  grid[torch.logical_and(grid[:,0] != 0., grid[:,0] != 2),:]
+    # datI = datI[torch.logical_and(datI[:,1] != 0., datI[:,1] != 2),:]
     
-    lrb = grid[torch.logical_or(grid[:,0] == 0., grid[:,0] == 2),:]
-    tbb = grid[torch.logical_or(grid[:,1] == 0., grid[:,1] == 2),:]
-    datB = torch.cat((lrb, tbb), dim = 0)
+    # lrb = grid[torch.logical_or(grid[:,0] == 0., grid[:,0] == 2),:]
+    # tbb = grid[torch.logical_or(grid[:,1] == 0., grid[:,1] == 2),:]
+    # datB = torch.cat((lrb, tbb), dim = 0)
     # --------------------------------------------------------------------
     
     # grid = torch.load(gridpath, map_location = 'cpu')
@@ -95,8 +96,8 @@ def train(**kwargs):
     modelold = getattr(models, opt.model)(**keys)
     modelold.to(device)
     error = []
-    # datI = gendat(num = 2500, boundary = False, device = device)
-    # datB = gendat(num = 500, boundary = True, device = device)
+    datI = gendat(num = 2500, boundary = False, device = device)
+    datB = gendat(num = 500, boundary = True, device = device)
     # datI = HeatFix(grid, boundary = False, device = device)
     # datB = HeatFix(grid, boundary = True, device = device)
     
@@ -127,8 +128,8 @@ def train(**kwargs):
         # --------------Optimization Loop at each time step--------------
         while True:
             optimizer.zero_grad()
-            # datI = gendat(num = 2500, boundary = False, device = device)
-            # datB = gendat(num = 500, boundary = True, device = device)
+            datI = gendat(num = 2500, boundary = False, device = device)
+            datB = gendat(num = 500, boundary = True, device = device)
             
             # datI = HeatFix(grid, boundary = False, device = device)
             # datB = HeatFix(grid, boundary = True, device = device)
@@ -138,9 +139,7 @@ def train(**kwargs):
             loss = losfunc(model, datI, datB, previous) 
             loss[0].backward()
             total_norm = torch.norm(torch.stack([torch.norm(p.grad.detach()).to(device) for p in model.parameters()]))
-            # if step % 100 == 0:
-            #     print(f'the total norm is {total_norm}')
-            # nn.utils.clip_grad_norm_(model.parameters(),  1)
+            nn.utils.clip_grad_norm_(model.parameters(),  1)
             optimizer.step()
             scheduler.step()
             step += 1      
@@ -151,8 +150,9 @@ def train(**kwargs):
             # oldenergy = loss[1].item()
         if epoch in timestamp:
             # opt.lr = opt.lr * opt.lr_decay
-            error.append(eval(model, grid, exact[timestamp.index(epoch + 1)]))
-            print(eval(model, grid, exact[timestamp.index(epoch)]), '===============================================================')
+            # error.append(abserr(model, grid, exact[timestamp.index(epoch + 1)]))
+            print(abserr(model, grid, exact[timestamp.index(epoch + 1)]), '===============================================================')
+            # print(abserr(model, grid, exact[timestamp.index(epoch + 1)]), '===============================================================')
             if epoch % 10 == 0:
                 model.save(f'heat{epoch}.pt')
         modelold.load_state_dict(model.state_dict()) 
@@ -172,6 +172,20 @@ def eval(model: Callable[..., Tensor],
     model.eval()
     pred = model(grid)
     err  = torch.pow(torch.mean(torch.pow(pred - exact, 2))/torch.mean(torch.pow(exact, 2)), 0.5)
+    model.train()
+    return err
+
+@torch.no_grad()
+def abserr(model: Callable[..., Tensor], 
+        grid: Tensor, 
+        exact: Tensor):
+    """
+    Compute the relative L2 norm
+    """
+    model.eval()
+    pred = model(grid)
+    err = torch.mean(abs(pred - exact))
+    # print(f"the mean abs error is {torch.mean(err)}")
     model.train()
     return err
 

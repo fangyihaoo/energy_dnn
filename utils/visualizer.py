@@ -44,6 +44,75 @@ sys.path.append(osp.dirname(osp.dirname(osp.abspath(__file__))))
 
 
 
+# grid = torch.load('../data/exact_sol/heatgrid.pt')
+# exact = torch.load('../data/exact_sol/heatexact.pt')
+
+# from config import opt
+# import models
+# ACTIVATION_MAP = {'relu' : nn.ReLU(),
+#             'tanh' : nn.Tanh(),
+#             'sigmoid': nn.Sigmoid(),
+#             'leakyrelu': nn.LeakyReLU()}
+# keys = {'FClayer':opt.FClayer, 
+#         'num_blocks':opt.num_blocks,
+#         'activation':ACTIVATION_MAP[opt.act],
+#         'num_input':opt.num_input,
+#         'num_output':opt.num_oupt, 
+#         'num_node':opt.num_node}
+# device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+# model = getattr(models, opt.model)(**keys).eval()
+# model.load(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))), 'checkpoints', 'heat70.pt'), dev = device)
+
+# pred = model(grid)
+# pred = pred.detach().numpy()
+# pred = pred.reshape(101, 101)
+# pred = np.transpose(pred)
+# plt.figure(figsize=(6,6))
+# ax = plt.subplot(1, 1, 1)
+# h = plt.imshow(pred, interpolation='nearest', cmap='rainbow',extent=[0, 2, 0, 2],origin='lower', aspect='auto')
+# divider = make_axes_locatable(ax)
+# cax = divider.append_axes("right", size="5%", pad=0.05)
+# plt.colorbar(h, cax=cax)
+# plt.savefig(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))),'heat.png'), pad_inches = 0.1, bbox_inches='tight')
+
+
+# fig, axs = plt.subplots(2, 3)
+# axs[0, 0].plot(x, y)
+# axs[0, 0].set_title("t = 0.1")
+
+# axs[0, 1].plot(x + 1, y + 1)
+# axs[0, 1].set_title("t = 0.5")
+
+# axs[0, 2].plot(x + 1, y + 1)
+# axs[0, 2].set_title("t = 0.9")
+
+
+# axs[1, 0].plot(x, y**2)
+# axs[1, 1].plot(x + 2, y + 2)
+# axs[1, 2].plot(x + 2, y + 2)
+
+
+# fig.tight_layout()
+
+# plt.figure(figsize=(10, 3.5))
+
+# plt.subplot(1, 2, 1)
+# plt.imshow(I, cmap='RdBu')
+# plt.colorbar()
+
+# plt.subplot(1, 2, 2)
+# plt.imshow(I, cmap='RdBu')
+# plt.colorbar(extend='both')
+# plt.clim(-1, 1);
+
+
+
+
+
+
+
+
+
 
 if __name__ == '__main__':
     from config import opt
@@ -60,14 +129,15 @@ if __name__ == '__main__':
             'num_node':opt.num_node}
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = getattr(models, opt.model)(**keys).eval()
-    model.load(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))), 'checkpoints', 'heat50.pt'), dev = device)
-    # x = torch.linspace(-1, 1, 101)
-    # y = torch.linspace(-1, 1, 101)
+    model.load(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))), 'checkpoints', 'heat90.pt'), dev = device)    
     x = torch.linspace(0, 2, 101)
     y = torch.linspace(0, 2, 101)
     X, Y = torch.meshgrid(x, y)
     Z = torch.cat((X.flatten()[:, None], Y.flatten()[:, None]), dim=1)
-#     Z = torch.cat((Z, torch.tensor([0]).repeat(Z.shape[0])[:,None]), dim = 1)
+    
+    # # Z = torch.cat((Z, torch.tensor([0]).repeat(Z.shape[0])[:,None]), dim = 1)
+
+    
     pred = model(Z)
     pred = pred.detach().numpy()
     pred = pred.reshape(101, 101)
@@ -78,8 +148,26 @@ if __name__ == '__main__':
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)
     plt.colorbar(h, cax=cax)
-    plt.savefig(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))),'heat.png'), pad_inches = 0.1, bbox_inches='tight')
-
+    plt.savefig(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))),'heat0.9.png'), pad_inches = 0.1, bbox_inches='tight')
+    
+    
+    # error plot
+# ----------------------------------------------------------------------
+    # grid = torch.load('../data/exact_sol/heatgrid.pt')
+    # exact = torch.load('../data/exact_sol/heatexact.pt')
+    # pred = model(grid)
+    # error = pred - exact[10]
+    # error = error.detach().numpy()
+    # error = error.reshape(101, 101)
+    # error = np.transpose(error)
+    # plt.figure(figsize=(6,6))
+    # ax = plt.subplot(1, 1, 1)
+    # h = plt.imshow(error, interpolation='nearest', cmap='rainbow',extent=[0, 2, 0, 2],origin='lower', aspect='auto')
+    # divider = make_axes_locatable(ax)
+    # cax = divider.append_axes("right", size="5%", pad=0.05)
+    # plt.colorbar(h, cax=cax)
+    # plt.savefig(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))),'heat0.1error.png'), pad_inches = 0.1, bbox_inches='tight')
+# ----------------------------------------------------------------------
     # allencahn300
     #allencahn2dloss1001
     # FClayer = 2
@@ -91,3 +179,4 @@ if __name__ == '__main__':
     # num_oupt = 1
 
     # num_node = 10
+    

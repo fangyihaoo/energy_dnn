@@ -93,7 +93,7 @@ def pretrain():
         real_i = HeatNew(datI, boundary = False)
         real_b = HeatNew(datB, boundary = True)
         loss = torch.mean((out_i - real_i)**2)
-        loss += 20*torch.mean((out_b - real_b)**2)
+        loss += 50*torch.mean((out_b - real_b)**2)
         if _ % 500 == 0:
             print(loss)
         loss.backward()
@@ -113,8 +113,8 @@ def pretrain():
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.05)
     plt.colorbar(h, cax=cax)
-    plt.savefig(path + 'heatfix.png')
-    model.save('heatfix.pt')
+    plt.savefig(path + 'heat.png')
+    model.save('heat.pt')
 
 
 

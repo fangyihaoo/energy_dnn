@@ -331,7 +331,7 @@ def Heat(model: Callable[...,Tensor],
     loss_i =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True)) * 4
     loss_b = torch.mean(torch.pow(output_b,2))
     
-    loss_p = 50*torch.mean(torch.pow(output_i - previous[0], 2))
-    loss_p += 50*torch.mean(torch.pow(output_b - previous[1], 2))
+    loss_p = 50*torch.mean(torch.pow(output_i - previous[0], 2)) * 4
+    loss_p += 50*torch.mean(torch.pow(output_b - previous[1], 2)) * 4
 
     return loss_i + 500*loss_b + loss_p, loss_i
