@@ -5,7 +5,6 @@ from data import poisson, poissoncycle
 from utils import Optim
 from utils import PoiLoss,  PoiCycleLoss
 from utils import weight_init
-# from torchnet import meter
 import os.path as osp
 from typing import Callable
 from torch import Tensor
@@ -54,11 +53,8 @@ def train(**kwargs):
     modelold.to(device)
     datI = gendat(num = 1000, boundary = False, device = device)
     datB = gendat(num = 250, boundary = True, device = device)
-    previous = []
+    previous = [0, 0]
     if opt.pretrain is None:
-        with torch.no_grad():
-            previous.append(model(datI))
-            previous.append(model(datB))
         modelold.load_state_dict(model.state_dict())
     else:
         init_path = osp.join(osp.dirname(osp.realpath(__file__)), 'checkpoints', opt.pretrain)

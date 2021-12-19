@@ -251,6 +251,6 @@ def poissoncycle(num: int = 1000,
         data = torch.cat((torch.cos(theta).unsqueeze_(1), torch.sin(theta).unsqueeze_(1) ), dim = 1)
         return data.to(device)
     else:
-        r = torch.rand(num)
+        r = torch.sqrt(torch.rand(num))
         data = torch.cat(((r*torch.cos(theta)).unsqueeze_(1), (r*torch.sin(theta)).unsqueeze_(1)), dim = 1)
         return data.to(device)
