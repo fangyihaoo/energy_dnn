@@ -3,8 +3,8 @@
 /*.job
 /log/*.png
 /log/loss
-/log/evolution
-/log/decay
+/log/heat
+/log/toy
 /draftCode
 /checkpoints/*.pt
 /*.png
