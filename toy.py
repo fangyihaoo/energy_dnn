@@ -1,11 +1,11 @@
 import torch
 import torch.nn as nn
 import models
-from data import poisson, allencahn
+from data import poisson, poissoncycle
 from utils import Optim
 from utils import PoiLoss,  PoiCycleLoss
 from utils import weight_init
-from torchnet import meter
+# from torchnet import meter
 import os.path as osp
 from typing import Callable
 from torch import Tensor
@@ -26,7 +26,7 @@ def train(**kwargs):
     # -------------------------------------------------------------------------------------------------------------------------------------
     # model configuration, modified the DATASET_MAP and LOSS_MAP according to your need
     DATASET_MAP = {'poi': poisson,
-                   'poissoncycle': allencahn}
+                   'poissoncycle': poissoncycle}
     LOSS_MAP = {'poi':PoiLoss,
                 'poissoncycle': PoiCycleLoss}
     ACTIVATION_MAP = {'relu' : nn.ReLU(),
@@ -70,8 +70,6 @@ def train(**kwargs):
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # model optimizer and recorder
-    op = Optim(model.parameters(), opt)
-    optimizer = op.optimizer
     timestamp = [20*i  for i in range(1, 10)]
     error = []
     # -------------------------------------------------------------------------------------------------------------------------------------
@@ -83,7 +81,6 @@ def train(**kwargs):
         step = 0
         op = Optim(model.parameters(), opt)
         optimizer = op.optimizer
-        oldenergy = 1e-8
         # ---------------------------------------------------------------
         # --------------Optimization Loop at each time step--------------
         while True:
@@ -95,22 +92,21 @@ def train(**kwargs):
                 previous[1] = modelold(datB)
             loss = losfunc(model, datI, datB, previous) 
             loss[0].backward()
-            # nn.utils.clip_grad_norm_(model.parameters(),  1)
+            nn.utils.clip_grad_norm_(model.parameters(),  1)
             optimizer.step()
             step += 1
             err = eval(model, grid, exact)
             error.append(err)        
-            if step == 500:
+            if step == opt.step_size:
                 break
-            oldenergy = loss[1].item()
+            
         if epoch in timestamp:
             opt.lr = opt.lr * opt.lr_decay
-
         if epoch % 5 == 0:
             print(f'The epoch is {epoch}, The error is {err}')
         modelold.load_state_dict(model.state_dict())
     error = torch.FloatTensor(error)
-    torch.save(error, osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'decay', opt.functional + 'poissourmethod.pt'))
+    torch.save(error, osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'toy', opt.functional + 'poissourmethod.pt'))
     
     # -------------------------------------------------------------------------------------------------------------------------------------
 

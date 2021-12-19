@@ -230,29 +230,27 @@ def HeatFix(grid: Tensor,
         data = data[torch.logical_and(data[:,1] != 0., data[:,1] != 2),:]
         return data.to(device)       
     
-    
 
+def poissoncycle(num: int = 1000, 
+                 boundary: bool = False,
+                 device: str = 'cpu') -> Tensor:
+    """
+    Poisson equation for -\laplacian u = 1
+    in (-1,1) \times (-1, 1), x^2 + y^2 <= 1
 
-# def poissoncycle(num: int = 1000, 
-#                  boundary: bool = False,
-#                  device: str = 'cpu') -> Tensor:
-#     """
-#     Poisson equation for -\laplacian u = 1
-#     in (-1,1) \times (-1, 1), x^2 + y^2 <= 1
+    Args:
+        num (int, optional): number of data points. Defaults to 1000.
+        data_type (str, optional): boundary condition. Defaults to boundary.
+        device (str, optional): 'cuda' or 'cpu'. Defaults to 'cpu'.
 
-#     Args:
-#         num (int, optional): number of data points. Defaults to 1000.
-#         data_type (str, optional): boundary condition. Defaults to boundary.
-#         device (str, optional): 'cuda' or 'cpu'. Defaults to 'cpu'.
-
-#     Returns:
-#         Tensor: (num, 2) dimension Tensor
-#     """
-#     theta = torch.rand(num)*2*pi
-#     if boundary:
-#         data = torch.cat((torch.cos(theta).unsqueeze_(1), torch.sin(theta).unsqueeze_(1) ), dim = 1)
-#         return data.to(device)
-#     else:
-#         r = torch.rand(num)
-#         data = torch.cat(((r*torch.cos(theta)).unsqueeze_(1), (r*torch.sin(theta)).unsqueeze_(1)), dim = 1)
-#         return data.to(device)
+    Returns:
+        Tensor: (num, 2) dimension Tensor
+    """
+    theta = torch.rand(num)*2*pi
+    if boundary:
+        data = torch.cat((torch.cos(theta).unsqueeze_(1), torch.sin(theta).unsqueeze_(1) ), dim = 1)
+        return data.to(device)
+    else:
+        r = torch.rand(num)
+        data = torch.cat(((r*torch.cos(theta)).unsqueeze_(1), (r*torch.sin(theta)).unsqueeze_(1)), dim = 1)
+        return data.to(device)

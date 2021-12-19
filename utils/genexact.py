@@ -69,18 +69,23 @@ def poiss2dcyc(grid: Tensor) -> Tensor:
 
 
 if __name__ == '__main__':
-    # Z = mesh2d(101, (0., pi), (-pi/2, pi/2))                  # poisson 2d
-    # exact = poi2d(Z)
-    # torch.save(Z, '../data/exact_sol/poiss2dgrid.pt')
-    # torch.save(exact, '../data/exact_sol/poiss2dexact.pt')
+    
+    """
+    generate the mesh grid on (0., pi) times (-pi/2, pi/2)
+    and the corresponding exact solution on the grid
+    """
+    Z = mesh2d(101, (0., pi), (-pi/2, pi/2))                  # poisson 2d
+    exact = poi2d(Z)
+    torch.save(Z, '../data/exact_sol/poiss2dgrid.pt')
+    torch.save(exact, '../data/exact_sol/poiss2dexact.pt')
 
     # Z = mesh2d(101, (-1., 1.), (-1., 1.))                  # poisson 2d
     # exact = poiss2dcyc(Z)
     # torch.save(Z, '../data/exact_sol/poiss2dcyclegrid.pt')
     # torch.save(exact, '../data/exact_sol/poiss2dcycleexact.pt')
     
-    Z = mesh2d(101, (0., 2.), (0., 2.))                  # heat 2d
+    # Z = mesh2d(101, (0., 2.), (0., 2.))                  # heat 2d
     # exact = poiss2dcyc(Z)
-    torch.save(Z, '../data/exact_sol/heatgrid.pt')
+    # torch.save(Z, '../data/exact_sol/heatgrid.pt')
     # torch.save(exact, '../data/exact_sol/poiss2dcycleexact.pt')
     
