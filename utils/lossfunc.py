@@ -32,12 +32,13 @@ def PoiLoss(model: Callable[..., Tensor],
     # f = (2*torch.sin(dat_i[:,0])*torch.cos(dat_i[:,1])).unsqueeze_(1)
     loss_i =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True)- f*output_i)
     loss_b = torch.mean(torch.pow(output_b,2))
-    
-    loss_p = 10*torch.mean(torch.pow(output_i - previous[0], 2))
-    loss_p += 10*torch.mean(torch.pow(output_b - previous[1], 2))
+    if previous:
+        loss_p = 10*torch.mean(torch.pow(output_i - previous[0], 2))
+        loss_p += 10*torch.mean(torch.pow(output_b - previous[1], 2))
+    else:
+        loss_p = 0
 
     return loss_i + 500*loss_b + loss_p, loss_i
-    # return loss_i + 500*loss_b, loss_i
 
 def AllenCahn2dLoss(model: Callable[..., Tensor], 
                     dat_i: Tensor, 
@@ -71,7 +72,6 @@ def AllenCahn2dLoss(model: Callable[..., Tensor],
     loss_p += 100*torch.mean(torch.pow(output_b - previous[1], 2))
     
     return loss_i + 3000*loss_b + loss_p, loss_i
-    # return loss_i + 1000*loss_b, loss_i
 
 
 def AllenCahnW(model: Callable[..., Tensor], 
@@ -262,11 +262,13 @@ def PoiCycleLoss(model: Callable[..., Tensor],
     loss_i =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True) - output_i)
     loss_b = torch.mean(torch.pow(output_b - bd(dat_b[:,0], dat_b[:,1]),2))
     
-    loss_p = 10*torch.mean(torch.pow(output_i - previous[0], 2))
-    loss_p += 10*torch.mean(torch.pow(output_b - previous[1], 2))
+    if previous:
+        loss_p = 10*torch.mean(torch.pow(output_i - previous[0], 2))
+        loss_p += 10*torch.mean(torch.pow(output_b - previous[1], 2))
+    else:
+        loss_p = 0
 
     return loss_i + 500*loss_b + loss_p, loss_i
-    # return loss_i + 500*loss_b, loss_i
     
     
 def PFVB(model: Callable[...,Tensor], 

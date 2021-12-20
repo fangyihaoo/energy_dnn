@@ -8,6 +8,12 @@ import sys
 import os.path as osp
 sys.path.append(osp.dirname(osp.dirname(osp.abspath(__file__))))
 
+
+
+
+"""
+Toy example
+"""
 # Relative L2 Norm plot
 # cycD = torch.load('../EnergyDisDNN/log/toy/poissoncyclepoissourmethod.pt', map_location=torch.device('cpu'))
 # cycP = torch.load('../EnergyDisDNN/log/toy/poissoncyclepoisspinn.pt', map_location=torch.device('cpu'))
@@ -15,7 +21,6 @@ D = torch.load('../EnergyDisDNN/log/toy/poipoissourmethod.pt', map_location=torc
 # P = torch.load('../EnergyDisDNN/log/toy/poipoisspinn.pt', map_location=torch.device('cpu'))
 epoch = torch.arange(0, 50001)
 
-print(len(D))
 
 # with plt.style.context('ggplot'):
 #     fig, ax = plt.subplots(1, 2, figsize=(15, 4))

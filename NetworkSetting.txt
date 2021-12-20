@@ -1,8 +1,9 @@
 Toy Example
 
+EVNN
     FClayer = 2
 
-    num_blocks = 3
+    num_blocks = 2
 
     num_input = 2
 
@@ -14,7 +15,7 @@ Toy Example
 
     load_model_path = None
 
-    pretrain = 'init.pt'
+    pretrain = 0
 
     exact = 'poiss2dexact.pt'
 
@@ -30,3 +31,66 @@ Toy Example
 
     step_size = 500
 
+Deep Ritz
+
+    FClayer = 2
+
+    num_blocks = 2
+
+    num_input = 2
+
+    num_oupt = 1
+
+    num_node = 10
+
+    act = 'tanh'  # tanh,  relu,  sigmoid,  leakyrelu
+
+    load_model_path = None
+
+    pretrain = 0
+
+    exact = 'poiss2dexact.pt'
+
+    grid = 'poiss2dgrid.pt'
+    
+    method = 'adam'
+
+    max_epoch = 50000 # number of epoch
+
+    lr = 1e-2 # initial learning rate
+
+    lr_decay = 0.5 # lr = lr*lr_decay
+
+    step_size = 5000
+
+Pinn
+
+    FClayer = 2
+
+    num_blocks = 2
+
+    num_input = 2
+
+    num_oupt = 1
+
+    num_node = 10
+
+    act = 'tanh'  # tanh,  relu,  sigmoid,  leakyrelu
+
+    load_model_path = None
+
+    pretrain = 0
+
+    exact = 'poiss2dexact.pt'
+
+    grid = 'poiss2dgrid.pt'
+    
+    method = 'adam'
+
+    max_epoch = 50000 # number of epoch
+
+    lr = 1e-2 # initial learning rate
+
+    lr_decay = 0.5 # lr = lr*lr_decay
+
+    step_size = 5000

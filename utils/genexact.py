@@ -27,6 +27,28 @@ def mesh2d(num: int,
 
     return Z
 
+def mesh2dcycle(num: int, 
+           xlim: Tuple[float, float], 
+           ylim: Tuple[float, float]) -> Tensor:
+    """
+    Generate meshgrid in square for 2d.
+
+    Args:
+        num (int): number of interval in one axis
+        xlim (Tuple[float, float]): left and right boundary for x-axis
+        ylim (Tuple[float, float]): lower and upper boundary for y-axis
+
+    Returns:
+        Tensor: grid location (num*num, 2)
+    """
+
+    x = torch.linspace(xlim[0], xlim[1], num)
+    y = torch.linspace(ylim[0], ylim[1], num)
+    X, Y = torch.meshgrid(x, y)
+    Z = torch.cat((X.flatten()[:, None], Y.flatten()[:, None]), dim=1)
+    ind = torch.sum(torch.pow(Z,2), 1) <= 1
+    return Z[ind, :]
+
 
 
 def poi2d(grid: Tensor) -> Tensor:
@@ -74,15 +96,15 @@ if __name__ == '__main__':
     generate the mesh grid on (0., pi) times (-pi/2, pi/2)
     and the corresponding exact solution on the grid
     """
-    Z = mesh2d(101, (0., pi), (-pi/2, pi/2))                  # poisson 2d
-    exact = poi2d(Z)
-    torch.save(Z, '../data/exact_sol/poiss2dgrid.pt')
-    torch.save(exact, '../data/exact_sol/poiss2dexact.pt')
+    # Z = mesh2d(101, (0., pi), (-pi/2, pi/2))                  # poisson 2d
+    # exact = poi2d(Z)
+    # torch.save(Z, '../data/exact_sol/poiss2dgrid.pt')
+    # torch.save(exact, '../data/exact_sol/poiss2dexact.pt')
 
-    # Z = mesh2d(101, (-1., 1.), (-1., 1.))                  # poisson 2d
-    # exact = poiss2dcyc(Z)
-    # torch.save(Z, '../data/exact_sol/poiss2dcyclegrid.pt')
-    # torch.save(exact, '../data/exact_sol/poiss2dcycleexact.pt')
+    Z = mesh2dcycle(101, (-1., 1.), (-1., 1.))                  # poisson 2d cycle
+    exact = poiss2dcyc(Z)
+    torch.save(Z, '../data/exact_sol/poiss2dcyclegrid.pt')
+    torch.save(exact, '../data/exact_sol/poiss2dcycleexact.pt')
     
     # Z = mesh2d(101, (0., 2.), (0., 2.))                  # heat 2d
     # exact = poiss2dcyc(Z)

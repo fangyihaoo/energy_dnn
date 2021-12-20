@@ -1,14 +1,16 @@
 import torch
 import torch.nn as nn
+from torch.optim.lr_scheduler import StepLR
 import models
 from data import poisson, poissoncycle
 from utils import Optim
-from utils import PoiLoss,  PoiCycleLoss
+from utils import PoissPINN, PoissCyclePINN
 from utils import weight_init
 import os.path as osp
 from typing import Callable
 from torch import Tensor
 from config import opt
+
 
 
 def train(**kwargs):
@@ -26,8 +28,8 @@ def train(**kwargs):
     # model configuration, modified the DATASET_MAP and LOSS_MAP according to your need
     DATASET_MAP = {'poi': poisson,
                    'poissoncycle': poissoncycle}
-    LOSS_MAP = {'poi':PoiLoss,
-                'poissoncycle': PoiCycleLoss}
+    LOSS_MAP = {'poi': PoissPINN,
+                'poissoncycle': PoissCyclePINN}
     ACTIVATION_MAP = {'relu' : nn.ReLU(),
                     'tanh' : nn.Tanh(),
                     'sigmoid': nn.Sigmoid(),
@@ -49,77 +51,57 @@ def train(**kwargs):
         model.load(opt.load_model_path)
     model.to(device)
     model.apply(weight_init)
-    modelold = getattr(models, opt.model)(**keys)
-    modelold.to(device)
-    datI = gendat(num = 1000, boundary = False, device = device)
-    datB = gendat(num = 250, boundary = True, device = device)
-    previous = [0, 0]
-    if not opt.pretrain:
-        modelold.load_state_dict(model.state_dict())
-    else:
-        init_path = osp.join(osp.dirname(osp.realpath(__file__)), 'checkpoints', opt.pretrain)
-        modelold.load_state_dict(torch.load(init_path))
-        with torch.no_grad():
-            previous.append(modelold(datI))
-            previous.append(modelold(datB))
+
     # -------------------------------------------------------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # model optimizer and recorder
-    timestamp = [20*i  for i in range(1, 10)]
+    op = Optim(model.parameters(), opt)
+    optimizer = op.optimizer
+    scheduler = StepLR(optimizer, step_size= opt.step_size, gamma = opt.lr_decay)
     error = []
     # -------------------------------------------------------------------------------------------------------------------------------------
-
+    
     # -------------------------------------------------------------------------------------------------------------------------------------
     # train part
     for epoch in range(opt.max_epoch):
-        # ---------------training setup in each time step---------------
-        step = 0
-        op = Optim(model.parameters(), opt)
-        optimizer = op.optimizer
-        # ---------------------------------------------------------------
-        # --------------Optimization Loop at each time step--------------
-        while True:
-            optimizer.zero_grad()
-            datI = gendat(num = 1000, boundary = False, device = device)
-            datB = gendat(num = 250, boundary = True, device = device)
-            with torch.no_grad():
-                previous[0] = modelold(datI)
-                previous[1] = modelold(datB)
-            loss = losfunc(model, datI, datB, previous) 
-            loss[0].backward()
-            nn.utils.clip_grad_norm_(model.parameters(),  1)
-            optimizer.step()
-            step += 1
-            err = eval(model, grid, exact)
-            error.append(err)        
-            if step == opt.step_size:
-                break
-            
-        if epoch in timestamp:
-            opt.lr = opt.lr * opt.lr_decay
-        if epoch % 5 == 0:
-            print(f'The epoch is {epoch}, The error is {err}')
-        modelold.load_state_dict(model.state_dict())
+        optimizer.zero_grad()
+        datI = gendat(num = 1000, boundary = False, device = device)
+        datB = gendat(num = 250, boundary = True, device = device)
+        loss = losfunc(model, datI, datB)
+        loss.backward()
+        optimizer.step()
+        scheduler.step()
+        err = eval(model, grid, exact)
+        error.append(err)
+        if epoch % 5000 == 0:            
+            print(f'Epoch: {epoch:05d}   Error: {err.item():.5f}')
     error = torch.FloatTensor(error)
-    torch.save(error, osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'toy', opt.functional + 'ourmethod.pt'))
+    torch.save(error, osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'toy', opt.functional + 'pinn.pt'))
     
+
     # -------------------------------------------------------------------------------------------------------------------------------------
 
 @torch.no_grad()
 def eval(model: Callable[..., Tensor], 
         grid: Tensor, 
-        exact: Tensor):
+        exact: Tensor) -> Tensor:
     """
     Compute the relative L2 norm
+
+    Args:
+        model (Callable[..., Tensor]): Network
+        grid (Tensor): grid of exact solution
+        exact (Tensor): exact solution
+
+    Returns:
+        Tensor: Relative L2 norm
     """
     model.eval()
     pred = model(grid)
     err  = torch.pow(torch.mean(torch.pow(pred - exact, 2))/torch.mean(torch.pow(exact, 2)), 0.5)
     model.train()
     return err
-
-
 
 
 
@@ -143,3 +125,4 @@ def help():
 if __name__=='__main__':
     import fire
     fire.Fire()
+

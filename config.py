@@ -11,7 +11,7 @@ class DefaultConfig(object):
 
     FClayer = 2
 
-    num_blocks = 3
+    num_blocks = 2
 
     num_input = 2
 
