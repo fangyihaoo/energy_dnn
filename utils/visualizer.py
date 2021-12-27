@@ -15,50 +15,46 @@ Toy example
 """
 # Relative L2 Norm plot
 
-Evnn = torch.load('../log/toy/poiourmethod.pt', map_location=torch.device('cpu'))
-Ritz = torch.load('../log/toy/poiDritz.pt', map_location=torch.device('cpu'))
-pinn = torch.load('../log/toy/poipinn.pt', map_location=torch.device('cpu'))
+# Evnn = torch.load('../log/toy/poiourmethod.pt', map_location=torch.device('cpu'))
+# Ritz = torch.load('../log/toy/poiDritz.pt', map_location=torch.device('cpu'))
+# pinn = torch.load('../log/toy/poipinn.pt', map_location=torch.device('cpu'))
 
-cycEvnn = torch.load('../log/toy/poissoncycleourmethod.pt', map_location=torch.device('cpu'))
-cycRitz = torch.load('../log/toy/poissoncycleDritz.pt', map_location=torch.device('cpu'))
-cycPinn = torch.load('../log/toy/poissoncyclepinn.pt', map_location=torch.device('cpu'))
+# cycEvnn = torch.load('../log/toy/poissoncycleourmethod.pt', map_location=torch.device('cpu'))
+# cycRitz = torch.load('../log/toy/poissoncycleDritz.pt', map_location=torch.device('cpu'))
+# cycPinn = torch.load('../log/toy/poissoncyclepinn.pt', map_location=torch.device('cpu'))
+# epoch = torch.arange(0, 50000)
 
+# fig, ax = plt.subplots(1, 2, figsize=(15, 4))
+# ax[0].spines['right'].set_visible(False)
+# ax[0].spines['top'].set_visible(False)
+# ax[1].spines['right'].set_visible(False)
+# ax[1].spines['top'].set_visible(False)
+# ax[0].set_title(r'$f = 1$')
+# ax[1].set_title(r'$f = 2\sin{x}\cdot\cos{y}$')
 
-epoch = torch.arange(0, 50000)
+# lines = []
+# ax[0].set_yscale('log')
+# lines = ax[0].plot(epoch, cycEvnn[0:50000],  color= '#F5B14C' )
+# lines += ax[0].plot(epoch, cycRitz[0:50000], color='#2CBDFE')
+# lines += ax[0].plot(epoch, cycPinn[0:50000], color='#69ECEB')
+# ax[0].legend(lines[:3], ['EVNN', 'DeepRitz', 'PINN'], loc='upper right', frameon=False)
+# ax[0].set_xlabel('epoch')
+# ax[0].set_ylabel('Relative L2 Norm')
 
+# lines = []
+# ax[1].set_yscale('log')
+# lines = ax[1].plot(epoch, Evnn[0:50000],  color= '#F5B14C' )
+# lines += ax[1].plot(epoch, Ritz[0:50000], color='#2CBDFE')
+# lines += ax[1].plot(epoch, pinn[0:50000], color='#69ECEB')
+# ax[1].legend(lines[:3], ['EVNN', 'DeepRitz', 'PINN'], loc='upper right', frameon=False)
+# ax[1].set_xlabel('epoch')
+# ax[1].set_ylabel('Relative L2 Norm')
 
-
-# with plt.style.context('ggplot'):
-fig, ax = plt.subplots(1, 2, figsize=(15, 4))
-ax[0].spines['right'].set_visible(False)
-ax[0].spines['top'].set_visible(False)
-ax[1].spines['right'].set_visible(False)
-ax[1].spines['top'].set_visible(False)
-ax[0].set_title(r'$f = 1$')
-ax[1].set_title(r'$f = 2\sin{x}\cdot\cos{y}$')
-
-lines = []
-ax[0].set_yscale('log')
-lines = ax[0].plot(epoch, cycEvnn[0:50000],  color= '#F5B14C' )
-lines += ax[0].plot(epoch, cycRitz[0:50000], color='#2CBDFE')
-lines += ax[0].plot(epoch, cycPinn[0:50000], color='#69ECEB')
-ax[0].legend(lines[:3], ['EVNN', 'DeepRitz', 'PINN'], loc='upper right', frameon=False)
-ax[0].set_xlabel('epoch')
-ax[0].set_ylabel('Relative L2 Norm')
-
-lines = []
-ax[1].set_yscale('log')
-lines = ax[1].plot(epoch, Evnn[0:50000],  color= '#F5B14C' )
-lines += ax[1].plot(epoch, Ritz[0:50000], color='#2CBDFE')
-lines += ax[1].plot(epoch, pinn[0:50000], color='#69ECEB')
-ax[1].legend(lines[:3], ['EVNN', 'DeepRitz', 'PINN'], loc='upper right', frameon=False)
-ax[1].set_xlabel('epoch')
-ax[1].set_ylabel('Relative L2 Norm')
-
-plt.savefig('l2norm.png',pad_inches = 0.05, bbox_inches='tight')
+# plt.savefig('l2norm.png',pad_inches = 0.05, bbox_inches='tight')
 
 
 
+"Heat equation"
 # grid = torch.load('../data/exact_sol/heatgrid.pt')
 # exact = torch.load('../data/exact_sol/heatexact.pt')
 
@@ -129,41 +125,41 @@ plt.savefig('l2norm.png',pad_inches = 0.05, bbox_inches='tight')
 
 
 
-# if __name__ == '__main__':
-#     from config import opt
-#     import models
-#     ACTIVATION_MAP = {'relu' : nn.ReLU(),
-#                 'tanh' : nn.Tanh(),
-#                 'sigmoid': nn.Sigmoid(),
-#                 'leakyrelu': nn.LeakyReLU()}
-#     keys = {'FClayer':opt.FClayer, 
-#             'num_blocks':opt.num_blocks,
-#             'activation':ACTIVATION_MAP[opt.act],
-#             'num_input':opt.num_input,
-#             'num_output':opt.num_oupt, 
-#             'num_node':opt.num_node}
-#     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-#     model = getattr(models, opt.model)(**keys).eval()
-#     model.load(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))), 'checkpoints', 'heat90.pt'), dev = device)    
-#     x = torch.linspace(0, 2, 101)
-#     y = torch.linspace(0, 2, 101)
-#     X, Y = torch.meshgrid(x, y)
-#     Z = torch.cat((X.flatten()[:, None], Y.flatten()[:, None]), dim=1)
+if __name__ == '__main__':
+    from config import opt
+    import models
+    ACTIVATION_MAP = {'relu' : nn.ReLU(),
+                'tanh' : nn.Tanh(),
+                'sigmoid': nn.Sigmoid(),
+                'leakyrelu': nn.LeakyReLU()}
+    keys = {'FClayer':opt.FClayer, 
+            'num_blocks':opt.num_blocks,
+            'activation':ACTIVATION_MAP[opt.act],
+            'num_input':opt.num_input,
+            'num_output':opt.num_oupt, 
+            'num_node':opt.num_node}
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = getattr(models, opt.model)(**keys).eval()
+    model.load(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))), 'checkpoints', 'heat.pt'), dev = device)    
+    x = torch.linspace(0, 2, 101)
+    y = torch.linspace(0, 2, 101)
+    X, Y = torch.meshgrid(x, y)
+    Z = torch.cat((X.flatten()[:, None], Y.flatten()[:, None]), dim=1)
     
-#     # # Z = torch.cat((Z, torch.tensor([0]).repeat(Z.shape[0])[:,None]), dim = 1)
+    # # Z = torch.cat((Z, torch.tensor([0]).repeat(Z.shape[0])[:,None]), dim = 1)
 
     
-#     pred = model(Z)
-#     pred = pred.detach().numpy()
-#     pred = pred.reshape(101, 101)
-#     pred = np.transpose(pred)
-#     plt.figure(figsize=(6,6))
-#     ax = plt.subplot(1, 1, 1)
-#     h = plt.imshow(pred, interpolation='nearest', cmap='rainbow',extent=[0, 2, 0, 2],origin='lower', aspect='auto')
-#     divider = make_axes_locatable(ax)
-#     cax = divider.append_axes("right", size="5%", pad=0.05)
-#     plt.colorbar(h, cax=cax)
-#     plt.savefig(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))),'heat0.9.png'), pad_inches = 0.1, bbox_inches='tight')
+    pred = model(Z)
+    pred = pred.detach().numpy()
+    pred = pred.reshape(101, 101)
+    pred = np.transpose(pred)
+    plt.figure(figsize=(6,6))
+    ax = plt.subplot(1, 1, 1)
+    h = plt.imshow(pred, interpolation='nearest', cmap='rainbow',extent=[0, 2, 0, 2],origin='lower', aspect='auto')
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="5%", pad=0.05)
+    plt.colorbar(h, cax=cax)
+    plt.savefig(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))),'heat100.png'), pad_inches = 0.1, bbox_inches='tight')
     
     
     # error plot

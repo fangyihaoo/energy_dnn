@@ -22,11 +22,6 @@ def train(**kwargs):
     exactpath = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', opt.exact)
     grid = torch.load(gridpath, map_location = device)
     exact = torch.load(exactpath, map_location = device)
-
-    # --------------------------------------------------------------------
-
-    timestamp = list(range(0, 102))
-
     # -------------------------------------------------------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------------------------------------------------------
@@ -54,7 +49,7 @@ def train(**kwargs):
     model.apply(weight_init)
     modelold = getattr(models, opt.model)(**keys)
     modelold.to(device)
-    error = []
+    timestamp = set([20, 60, 100])
     datI = gendat(num = 2500, boundary = False, device = device)
     datB = gendat(num = 500, boundary = True, device = device)
 
@@ -75,7 +70,7 @@ def train(**kwargs):
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # train part
-    for epoch in range(opt.max_epoch):
+    for epoch in range(opt.max_epoch+1):
         # ---------------training setup in each time step---------------
         step = 0
         op = Optim(model.parameters(), opt)
@@ -98,18 +93,12 @@ def train(**kwargs):
             optimizer.step()
             scheduler.step()
             step += 1      
-            if total_norm < 1e-4 or step == 500:
+            if total_norm < 1e-4 or step == 1000:
                 break
-
+        print(eval(model, grid, exact[epoch]), step)
         if epoch in timestamp:
-            opt.lr = opt.lr * opt.lr_decay
-            error.append(abserr(model, grid, exact[timestamp.index(epoch + 1)]))
-            print(abserr(model, grid, exact[timestamp.index(epoch + 1)]), '===============================================================')
-            # print(abserr(model, grid, exact[timestamp.index(epoch + 1)]), '===============================================================')
-            if epoch % 10 == 0:
-                model.save(f'heat{epoch}.pt')
+            model.save(f'heat{epoch}.pt')
         modelold.load_state_dict(model.state_dict()) 
-    print('=============================50====================')
     # torch.save(error, 'error103.pt')
             
     
