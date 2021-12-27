@@ -47,7 +47,7 @@ def HeatNew(Z: Tensor, boundary: str = False):
 
 
 def pretrain():
-    # model configuration
+    # heat model configuration
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     ACTIVATION_MAP = {'relu' : nn.ReLU(),
                     'tanh' : nn.Tanh(),
@@ -61,6 +61,7 @@ def pretrain():
             'num_node':opt.num_node}
     model = getattr(models, opt.model)(**keys)
     model.to(device)
+    model.apply(weight_init)
     op = Optim(model.parameters(), opt)
     optimizer = op.optimizer
     scheduler = StepLR(optimizer, step_size=opt.step_size, gamma=opt.lr_decay)
@@ -72,22 +73,16 @@ def pretrain():
     # Z = torch.cat((X.flatten()[:, None], Y.flatten()[:, None]), dim=1)
     # exact = constant(Z[:,0], Z[:,1])
     
+    
     path = osp.join(osp.dirname(osp.dirname(osp.abspath(__file__))), 'data', 'exact_sol' ,"")
     grid = torch.load(path + 'heatgrid.pt', map_location = device)
     exact = torch.load(path + 'heatexact.pt', map_location = device)
-    datI =  grid[torch.logical_and(grid[:,0] != 0., grid[:,0] != 2),:]
-    datI = datI[torch.logical_and(datI[:,1] != 0., datI[:,1] != 2),:]
-    
-    lrb = grid[torch.logical_or(grid[:,0] == 0., grid[:,0] == 2),:]
-    tbb = grid[torch.logical_or(grid[:,1] == 0., grid[:,1] == 2),:]
-    datB = torch.cat((lrb, tbb), dim = 0)
-    
     
     # train the initialization model
     for _ in range(10000 + 1):
         optimizer.zero_grad()
-        # datI = heat(num = 5000, boundary = False, device = device)
-        # datB = heat(num = 1000, boundary = True, device = device)
+        datI = heat(num = 5000, boundary = False, device = device)
+        datB = heat(num = 1000, boundary = True, device = device)
         out_i = model(datI)
         out_b = model(datB)
         real_i = HeatNew(datI, boundary = False)
@@ -103,7 +98,6 @@ def pretrain():
     # check the model and save it
     path = osp.join(osp.dirname(osp.dirname(osp.abspath(__file__))), 'log', "")
     plt.figure()
-    # pred = model(Z)
     pred = model(grid)
     pred = pred.detach().numpy()
     pred = pred.reshape(101, 101)

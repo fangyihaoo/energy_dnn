@@ -10,44 +10,52 @@ sys.path.append(osp.dirname(osp.dirname(osp.abspath(__file__))))
 
 
 
-
 """
 Toy example
 """
 # Relative L2 Norm plot
-# cycD = torch.load('../EnergyDisDNN/log/toy/poissoncyclepoissourmethod.pt', map_location=torch.device('cpu'))
-# cycP = torch.load('../EnergyDisDNN/log/toy/poissoncyclepoisspinn.pt', map_location=torch.device('cpu'))
-D = torch.load('../EnergyDisDNN/log/toy/poipoissourmethod.pt', map_location=torch.device('cpu'))
-# P = torch.load('../EnergyDisDNN/log/toy/poipoisspinn.pt', map_location=torch.device('cpu'))
-epoch = torch.arange(0, 50001)
+
+Evnn = torch.load('../log/toy/poiourmethod.pt', map_location=torch.device('cpu'))
+Ritz = torch.load('../log/toy/poiDritz.pt', map_location=torch.device('cpu'))
+pinn = torch.load('../log/toy/poipinn.pt', map_location=torch.device('cpu'))
+
+cycEvnn = torch.load('../log/toy/poissoncycleourmethod.pt', map_location=torch.device('cpu'))
+cycRitz = torch.load('../log/toy/poissoncycleDritz.pt', map_location=torch.device('cpu'))
+cycPinn = torch.load('../log/toy/poissoncyclepinn.pt', map_location=torch.device('cpu'))
+
+
+epoch = torch.arange(0, 50000)
+
 
 
 # with plt.style.context('ggplot'):
-#     fig, ax = plt.subplots(1, 2, figsize=(15, 4))
-#     ax[0].spines['right'].set_visible(False)
-#     ax[0].spines['top'].set_visible(False)
-#     ax[1].spines['right'].set_visible(False)
-#     ax[1].spines['top'].set_visible(False)
-#     ax[0].set_title(r'$f = 1$')
-#     ax[1].set_title(r'$f = 2\sin{x}\cdot\cos{y}$')
+fig, ax = plt.subplots(1, 2, figsize=(15, 4))
+ax[0].spines['right'].set_visible(False)
+ax[0].spines['top'].set_visible(False)
+ax[1].spines['right'].set_visible(False)
+ax[1].spines['top'].set_visible(False)
+ax[0].set_title(r'$f = 1$')
+ax[1].set_title(r'$f = 2\sin{x}\cdot\cos{y}$')
 
-#     lines = []
-#     ax[0].set_yscale('log')
-#     lines = ax[0].plot(epoch, cycP,  color= '#F5B14C' )
-#     lines += ax[0].plot(epoch, cycD, color='#2CBDFE')
-#     ax[0].legend(lines[:2], ['PINN', 'EVNN'], loc='upper right', frameon=False)
-#     ax[0].set_xlabel('epoch')
-#     ax[0].set_ylabel('Relative L2 Norm')
+lines = []
+ax[0].set_yscale('log')
+lines = ax[0].plot(epoch, cycEvnn[0:50000],  color= '#F5B14C' )
+lines += ax[0].plot(epoch, cycRitz[0:50000], color='#2CBDFE')
+lines += ax[0].plot(epoch, cycPinn[0:50000], color='#69ECEB')
+ax[0].legend(lines[:3], ['EVNN', 'DeepRitz', 'PINN'], loc='upper right', frameon=False)
+ax[0].set_xlabel('epoch')
+ax[0].set_ylabel('Relative L2 Norm')
 
-#     lines = []
-#     ax[1].set_yscale('log')
-#     lines = ax[1].plot(epoch, P,  color= '#F5B14C' )
-#     lines += ax[1].plot(epoch, D, color='#2CBDFE')
-#     ax[1].legend(lines[:2], ['PINN', 'EVNN'], loc='upper right', frameon=False)
-#     ax[1].set_xlabel('epoch')
-#     ax[1].set_ylabel('Relative L2 Norm')
+lines = []
+ax[1].set_yscale('log')
+lines = ax[1].plot(epoch, Evnn[0:50000],  color= '#F5B14C' )
+lines += ax[1].plot(epoch, Ritz[0:50000], color='#2CBDFE')
+lines += ax[1].plot(epoch, pinn[0:50000], color='#69ECEB')
+ax[1].legend(lines[:3], ['EVNN', 'DeepRitz', 'PINN'], loc='upper right', frameon=False)
+ax[1].set_xlabel('epoch')
+ax[1].set_ylabel('Relative L2 Norm')
 
-# plt.savefig('l2norm.png',pad_inches = 0.05, bbox_inches='tight')
+plt.savefig('l2norm.png',pad_inches = 0.05, bbox_inches='tight')
 
 
 
