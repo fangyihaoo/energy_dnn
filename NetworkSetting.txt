@@ -122,8 +122,11 @@ EVNN
 
     max_epoch = 100 # number of epoch
 
-    lr = 1e-3 # initial learning rate
+    lr = 1e-2 # initial learning rate
 
     lr_decay = 0.5 # lr = lr*lr_decay
 
-    step_size = 50
+    step_size = 200
+
+    interior sample = 2500
+    boundary sample = 500

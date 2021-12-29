@@ -140,13 +140,13 @@ if __name__ == '__main__':
             'num_node':opt.num_node}
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = getattr(models, opt.model)(**keys).eval()
-    model.load(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))), 'checkpoints', 'heat.pt'), dev = device)    
+    model.load(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))), 'checkpoints', 'heat100.pt'), dev = device)    
     x = torch.linspace(0, 2, 101)
     y = torch.linspace(0, 2, 101)
     X, Y = torch.meshgrid(x, y)
     Z = torch.cat((X.flatten()[:, None], Y.flatten()[:, None]), dim=1)
     
-    # # Z = torch.cat((Z, torch.tensor([0]).repeat(Z.shape[0])[:,None]), dim = 1)
+    # Z = torch.cat((Z, torch.tensor([0]).repeat(Z.shape[0])[:,None]), dim = 1)
 
     
     pred = model(Z)
@@ -160,6 +160,17 @@ if __name__ == '__main__':
     cax = divider.append_axes("right", size="5%", pad=0.05)
     plt.colorbar(h, cax=cax)
     plt.savefig(osp.join(osp.dirname(osp.dirname(osp.realpath(__file__))),'heat100.png'), pad_inches = 0.1, bbox_inches='tight')
+    
+
+    
+    
+
+    
+    
+    
+    
+    
+    
     
     
     # error plot

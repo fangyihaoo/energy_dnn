@@ -49,7 +49,7 @@ def train(**kwargs):
     model.apply(weight_init)
     modelold = getattr(models, opt.model)(**keys)
     modelold.to(device)
-    timestamp = set([20, 60, 100])
+    timestamp = set([1, 20, 60, 100])
     datI = gendat(num = 2500, boundary = False, device = device)
     datB = gendat(num = 500, boundary = True, device = device)
 
@@ -93,9 +93,9 @@ def train(**kwargs):
             optimizer.step()
             scheduler.step()
             step += 1      
-            if total_norm < 1e-4 or step == 1000:
+            if total_norm < 1e-4 or step == 1200:
                 break
-        print(eval(model, grid, exact[epoch]), step)
+        print(abserr(model, grid, exact[epoch]), step)
         if epoch in timestamp:
             model.save(f'heat{epoch}.pt')
         modelold.load_state_dict(model.state_dict()) 

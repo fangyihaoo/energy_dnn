@@ -7,4 +7,4 @@
 
 module load python
 
-python heat.py train --model='ResNet' --functional='heat' --grid='heatgrid.pt' --exact='heatexact.pt' --max_epoch=100 --step_size=100 --lr=1e-3 --pretrain='heat.pt' 
+python heat.py train --model='ResNet' --functional='heat' --grid='heatgrid.pt' --exact='heatexact.pt' --max_epoch=100 --step_size=200 --lr=1e-2 --pretrain='heat.pt' 
