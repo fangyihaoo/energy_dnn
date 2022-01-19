@@ -54,7 +54,7 @@ def train(**kwargs):
     datI = gendat(num = 1000, boundary = False, device = device)
     datB = gendat(num = 250, boundary = True, device = device)
     previous = [0, 0]
-    if not opt.pretrain:
+    if opt.pretrain is None:
         modelold.load_state_dict(model.state_dict())
     else:
         init_path = osp.join(osp.dirname(osp.realpath(__file__)), 'checkpoints', opt.pretrain)
@@ -66,7 +66,7 @@ def train(**kwargs):
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # model optimizer and recorder
-    timestamp = [20*i  for i in range(1, 10)]
+    timestamp = [50*i  for i in range(1, 10)]
     error = []
     # -------------------------------------------------------------------------------------------------------------------------------------
 
@@ -88,7 +88,7 @@ def train(**kwargs):
                 previous[1] = modelold(datB)
             loss = losfunc(model, datI, datB, previous) 
             loss[0].backward()
-            # nn.utils.clip_grad_norm_(model.parameters(),  1)
+            nn.utils.clip_grad_norm_(model.parameters(),  1)
             optimizer.step()
             step += 1
             err = eval(model, grid, exact)

@@ -84,7 +84,19 @@ def poiss2dcyc(grid: Tensor) -> Tensor:
     return (1 - 0.25*(grid[:,0]**2 + grid[:,1]**2)).unsqueeze_(1)
 
 
+def PoiHighExact(grid: Tensor) -> Tensor:
+    """
+    Generate exact solution according to the following high dimension poisson equation
+    
+    Exact: u = \sum_{k = 1}^{d} cos(\pi * x_k)
 
+    Args:
+        grid (Tensor): location of the grid tensor (N, d)
+
+    Returns:
+        Tensor: exact solution (N, 1)
+    """
+    return torch.sum(torch.cos(pi*grid), dim = 1, keepdim = True)
 
 
 

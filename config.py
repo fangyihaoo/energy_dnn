@@ -23,7 +23,7 @@ class DefaultConfig(object):
 
     load_model_path = None
 
-    pretrain = 'init.pt'
+    pretrain = None
 
     exact = 'poiss2dexact.pt'
 
@@ -38,6 +38,8 @@ class DefaultConfig(object):
     lr_decay = 0.5 # lr = lr*lr_decay
 
     step_size = 2000
+    
+    dimension = 10
 
     momentum = 0.9 # Momentum for modified SGD
 

@@ -254,3 +254,20 @@ def poissoncycle(num: int = 1000,
         r = torch.sqrt(torch.rand(num))
         data = torch.cat(((r*torch.cos(theta)).unsqueeze_(1), (r*torch.sin(theta)).unsqueeze_(1)), dim = 1)
         return data.to(device)
+
+def PoiHighGrid(num: int = 1000,
+            d: int = 10,
+            device: str ='cpu') -> Tensor:
+    """
+    poisson (0, 1)^d 
+    d: dimention
+    Interior: latin square sampling
+
+    Args:
+        num (int): number of points need to be sample. 
+        device (str): cpu or gpu
+
+    Returns:
+        Tensor: Date coordinates tensor (N \times 2 or 4N \times 2)
+    """
+    return torch.from_numpy(lhs(d, num)).float().to(device)

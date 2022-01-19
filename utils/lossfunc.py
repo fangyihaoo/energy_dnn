@@ -33,12 +33,40 @@ def PoiLoss(model: Callable[..., Tensor],
     loss_i =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True)- f*output_i)
     loss_b = torch.mean(torch.pow(output_b,2))
     if previous:
-        loss_p = 10*torch.mean(torch.pow(output_i - previous[0], 2))
-        loss_p += 10*torch.mean(torch.pow(output_b - previous[1], 2))
+        loss_p = 50*torch.mean(torch.pow(output_i - previous[0], 2))
+        loss_p += 50*torch.mean(torch.pow(output_b - previous[1], 2))
     else:
         loss_p = 0
 
     return loss_i + 500*loss_b + loss_p, loss_i
+
+
+def PoiHighLoss(model: Callable[..., Tensor], 
+            dat: Tensor, 
+            previous: List[Tensor]) -> Tensor:
+    """
+    Loss function for 2d Poisson equation
+    -\laplacia u = pi^2 \sum_k=1^d cos(pi*x_k),    u \in \Omega
+    u = 0,                           u \in \partial \Omega (0, 1) ^ d
+
+    Args:
+        model (Callable[..., Tensor]): Network 
+        dat (Tensor): Interior point
+        previous (Tensor): Result from previous time step model. 
+
+    Returns:
+        Tensor: loss
+    """
+
+    f = pi*pi*torch.sum(torch.cos(pi*dat), dim = 1, keepdim = True)
+    dat.requires_grad = True
+    output = model(dat)
+    ux = torch.autograd.grad(outputs = output, inputs = dat, grad_outputs = torch.ones_like(output), retain_graph=True, create_graph=True)[0]
+    loss =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True)- f*output)
+    loss_p = 50*torch.mean(torch.pow(output - previous, 2))
+
+    return loss +  loss_p
+
 
 def AllenCahn2dLoss(model: Callable[..., Tensor], 
                     dat_i: Tensor, 
@@ -263,8 +291,8 @@ def PoiCycleLoss(model: Callable[..., Tensor],
     loss_b = torch.mean(torch.pow(output_b - bd(dat_b[:,0], dat_b[:,1]),2))
     
     if previous:
-        loss_p = 10*torch.mean(torch.pow(output_i - previous[0], 2))
-        loss_p += 10*torch.mean(torch.pow(output_b - previous[1], 2))
+        loss_p = 50*torch.mean(torch.pow(output_i - previous[0], 2))
+        loss_p += 50*torch.mean(torch.pow(output_b - previous[1], 2))
     else:
         loss_p = 0
 
