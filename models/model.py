@@ -239,7 +239,7 @@ class Softplus(nn.Module):
 
 
 class SymmSoftplus(torch.nn.Module):
-    # noinspection PyMethodMayBeStatic
+
     def forward(self, x):
         return symm_softplus(x)
 
