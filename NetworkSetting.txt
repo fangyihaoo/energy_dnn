@@ -95,6 +95,39 @@ Pinn
 
     step_size = 5000
 
+
+
+High Dimension Poisson
+
+    FClayer = 2
+
+    num_blocks = 2
+
+    num_input = 2
+
+    num_oupt = 1
+
+    num_node = 10
+
+    act = 'tanh'  # tanh,  relu,  sigmoid,  leakyrelu
+
+    load_model_path = None
+
+    pretrain = None
+    
+    method = 'adam'
+
+    max_epoch = 500 # number of epoch
+
+    lr = 1e-2 # initial learning rate
+
+    lr_decay = 0.5 # lr = lr*lr_decay
+
+    step_size = 100
+
+
+
+
 Heat Equation
 
 EVNN

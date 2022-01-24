@@ -1,1 +1,1 @@
-from .model import ResNet, FullNet
+from .model import ResNet, FullNet, AugICNN

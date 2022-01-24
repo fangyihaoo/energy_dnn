@@ -6,7 +6,7 @@ from utils import Optim
 from utils import PoiHighLoss
 from utils import PoiHighExact
 from utils import weight_init
-import os.path as osp
+# import os.path as osp
 from typing import Callable
 from torch import Tensor
 from config import opt
@@ -46,14 +46,14 @@ def train(**kwargs):
     model.apply(weight_init)
     modelold = getattr(models, opt.model)(**keys)
     modelold.to(device)
-    datI = gendat(num = 1000, d = opt.dimension, device = device)
-    previous = [0]
+    previous = 0
     modelold.load_state_dict(model.state_dict())
     # -------------------------------------------------------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # model optimizer and recorder
-    timestamp = [50*i  for i in range(1, 10)]
+    timestamp = [30*i  for i in range(1, 10)]
+    MinError = float('inf')
     # -------------------------------------------------------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------------------------------------------------------
@@ -67,22 +67,24 @@ def train(**kwargs):
         # --------------Optimization Loop at each time step--------------
         while True:
             optimizer.zero_grad()
-            datI = gendat(num = 1000, d = opt.dimension, device = device)
+            datI = gendat(num = 100000, d = opt.dimension, device = device)
             with torch.no_grad():
-                previous[0] = modelold(datI)
+                previous = modelold(datI)
             loss = losfunc(model, datI, previous) 
             loss.backward()
             nn.utils.clip_grad_norm_(model.parameters(),  1)
             optimizer.step()
-            step += 1
-            # err = eval(model, grid, exact)
-            # error.append(err)        
+            step += 1      
             if step == opt.step_size:
-                break        
+                break
+        err = eval(model, datI, PoiHighExact(datI))
         if epoch in timestamp:
             opt.lr = opt.lr * opt.lr_decay
-        # if epoch % 5 == 0:
-        #     print(f'The epoch is {epoch}, The error is {err}')
+        if epoch % 10 == 0:
+            if err < MinError: 
+                model.save('HighPoi.pt')
+                MinError = err
+        print(f'The epoch is {epoch}, The error is {err}')
         modelold.load_state_dict(model.state_dict())
 
     
@@ -92,17 +94,13 @@ def train(**kwargs):
     """
     l2 relative error
     """
-    error = []
-    for _ in range(100)
-        datI = gendat(num = 2000, d = opt.dimension, device = device)
-        error.append(eval(model, datI, PoiHighExact(datI)))
+    # error = []
+    # for _ in range(100):
+    #     datI = gendat(num = 2000, d = opt.dimension, device = device)
+    #     error.append(eval(model, datI, PoiHighExact(datI)))
     
-    print('the mean is :', torch.mean(error))
-    print('the sd is : ',  torch.std(error, unbiased=True))
-    
-    
-    
-    
+    # print('the mean is :', torch.mean(torch.tensor(error)))
+    # print('the sd is : ',  torch.std(torch.tensor(error), unbiased=True))
     
     # -------------------------------------------------------------------------------------------------------------------------------------
     
