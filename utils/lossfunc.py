@@ -64,7 +64,6 @@ def PoiHighLoss(model: Callable[..., Tensor],
     ux = torch.autograd.grad(outputs = output, inputs = dat, grad_outputs = torch.ones_like(output), retain_graph=True, create_graph=True)[0]
     loss =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True)- f*output)
     loss_p = 50*torch.mean(torch.pow(output - previous, 2))
-
     return loss +  loss_p
 
 

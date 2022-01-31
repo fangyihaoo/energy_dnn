@@ -33,7 +33,7 @@ class Optim(object):
             self.optimizer =  optim.RMSProp(self.params, lr = self.lr)
 
         elif self.method == 'adam':
-            self.optimizer =  optim.Adam(self.params, lr=self.lr, weight_decay = 1e-5)
+            self.optimizer =  optim.Adam(self.params, lr=self.lr)
         
         elif self.method == 'adadelta':
             self.optimizer =  optim.Adadelta(self.params)

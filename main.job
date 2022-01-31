@@ -7,4 +7,4 @@
 
 module load python
 
-python HighDimPoi.py train --model='ResNet' --functional='poi' --num_input=10 --num_blocks=5 --num_node=20 --max_epoch=300 --step_size=100 --lr=1e-2 --lr_decay=0.7
+python HighDimPoi.py train --model='ResNet' --functional='poi' --num_input=10 --num_blocks=5 --num_node=35 --max_epoch=300 --step_size=100 --lr=1e-2 --lr_decay=0.8
