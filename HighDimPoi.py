@@ -6,6 +6,7 @@ from utils import Optim
 from utils import PoiHighLoss
 from utils import PoiHighExact
 from utils import weight_init
+from utils import L2_Reg
 # import os.path as osp
 from typing import Callable
 from torch import Tensor
@@ -52,7 +53,7 @@ def train(**kwargs):
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # model optimizer and recorder
-    timestamp = [30*i  for i in range(1, 10)]
+    timestamp = [20*i  for i in range(1, 10)]
     MinError = float('inf')
     # -------------------------------------------------------------------------------------------------------------------------------------
 
@@ -70,7 +71,8 @@ def train(**kwargs):
             datI = gendat(num = 100000, d = opt.dimension, device = device)
             with torch.no_grad():
                 previous = modelold(datI)
-            loss = losfunc(model, datI, previous) 
+            weight = L2_Reg(model, modelold)
+            loss = losfunc(model, datI, previous) + opt.lamda*weight
             loss.backward()
             nn.utils.clip_grad_norm_(model.parameters(),  1)
             optimizer.step()

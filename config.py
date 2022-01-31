@@ -35,6 +35,8 @@ class DefaultConfig(object):
 
     lr = 1e-2 # initial learning rate
 
+    lamda = 1e-4 
+    
     lr_decay = 0.5 # lr = lr*lr_decay
 
     step_size = 2000

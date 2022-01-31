@@ -270,4 +270,4 @@ def PoiHighGrid(num: int = 1000,
     Returns:
         Tensor: Date coordinates tensor (N \times 2 or 4N \times 2)
     """
-    return torch.from_numpy(lhs(d, num)).float().to(device)
+    return torch.from_numpy(2*lhs(d, num) - 1).float().to(device)

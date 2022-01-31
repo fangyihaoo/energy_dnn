@@ -3,6 +3,16 @@ from torch import Tensor
 from typing import Callable, List, Tuple
 from numpy import pi
 
+def L2_Reg(model1: Callable[..., Tensor],
+           model2: Callable[..., Tensor]):
+    """
+    output the L2 regulation on weight parameters between current and previous models
+    """
+    reg = 0
+    for (name1, p1), (_, p2) in zip(model1.named_parameters(), model2.named_parameters()):
+        if 'weight' in name1:
+            reg += torch.sum(torch.square(p1 - p2.detach()))
+    return reg
 
 
 def PoiLoss(model: Callable[..., Tensor], 

@@ -93,7 +93,7 @@ def train(**kwargs):
             optimizer.step()
             scheduler.step()
             step += 1      
-            if total_norm < 1e-4 or step == 1200:
+            if total_norm < 1e-4 or step == opt.step_size:
                 break
         print(abserr(model, grid, exact[epoch]), step)
         if epoch in timestamp:
