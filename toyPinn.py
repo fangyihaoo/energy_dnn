@@ -2,9 +2,9 @@ import torch
 import torch.nn as nn
 from torch.optim.lr_scheduler import StepLR
 import models
-from data import poisson, poissoncycle
+from data import poisson, poissoncycle,poissonsphere
 from utils import Optim
-from utils import PoissPINN, PoissCyclePINN
+from utils import PoissPINN, PoissCyclePINN,PoissSpherePINN
 from utils import weight_init
 import os.path as osp
 from typing import Callable
@@ -22,28 +22,31 @@ def train(**kwargs):
     gridpath = osp.join(osp.dirname(osp.realpath(__file__)), 'data', 'exact_sol', opt.grid)
     grid = torch.load(gridpath, map_location = device)
     exact = torch.load(exactpath, map_location = device)
-    # -------------------------------------------------------------------------------------------------------------------------------------
+    # ------------------------------------------------------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------------------------------------------------------
     # model configuration, modified the DATASET_MAP and LOSS_MAP according to your need
     DATASET_MAP = {'poi': poisson,
-                   'poissoncycle': poissoncycle}
+                   'poissoncycle': poissoncycle,
+                   'poissonsphere': poissonsphere}
     LOSS_MAP = {'poi': PoissPINN,
-                'poissoncycle': PoissCyclePINN}
+                'poissoncycle': PoissCyclePINN,
+                'poissonsphere':PoissSpherePINN}
     ACTIVATION_MAP = {'relu' : nn.ReLU(),
                     'tanh' : nn.Tanh(),
                     'sigmoid': nn.Sigmoid(),
                     'leakyrelu': nn.LeakyReLU()}
-    keys = {'FClayer':opt.FClayer, 
+    keys = {'FClayer':opt.FClayer,
             'num_blocks':opt.num_blocks,
             'activation':ACTIVATION_MAP[opt.act],
             'num_input':opt.num_input,
-            'num_output':opt.num_oupt, 
+            'num_output':opt.num_oupt,
             'num_node':opt.num_node}
     gendat = DATASET_MAP[opt.functional]
     losfunc = LOSS_MAP[opt.functional]
+    lam = opt.lam
     # -------------------------------------------------------------------------------------------------------------------------------------
-    
+
     # -------------------------------------------------------------------------------------------------------------------------------------
     # model initialization
     model = getattr(models, opt.model)(**keys)
@@ -60,31 +63,40 @@ def train(**kwargs):
     optimizer = op.optimizer
     scheduler = StepLR(optimizer, step_size= opt.step_size, gamma = opt.lr_decay)
     error = []
+    train_loss = []
     # -------------------------------------------------------------------------------------------------------------------------------------
-    
+
     # -------------------------------------------------------------------------------------------------------------------------------------
     # train part
     for epoch in range(opt.max_epoch):
         optimizer.zero_grad()
         datI = gendat(num = 1000, boundary = False, device = device)
-        datB = gendat(num = 250, boundary = True, device = device)
-        loss = losfunc(model, datI, datB)
+        if opt.functional == 'poissonsphere':
+            loss = losfunc(model,datI,lam=lam)
+        else:
+            datB = gendat(num = 0, boundary = True, device = device)
+            loss = losfunc(model, datI, datB)
         loss.backward()
         optimizer.step()
         scheduler.step()
         err = eval(model, grid, exact)
-        error.append(err)
-        if epoch % 5000 == 0:            
-            print(f'Epoch: {epoch:05d}   Error: {err.item():.5f}')
-    error = torch.FloatTensor(error)
-    torch.save(error, osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'toy', opt.functional + 'pinn.pt'))
-    
+        if epoch % 10000== 0:
+            train_loss.append(loss.item())
+            error.append(err.item())
+            print(f'Epoch: {epoch:05d}   Error: {err.item():.5f}   Loss: {loss.item():.5f}')
+
+    with open(osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'toy', opt.functional + f'lam_{opt.lam}.txt'), 'w') as file:
+        file.write(f'error: {min(error)} \n loss:{min(train_loss)}' )
+    #error = torch.FloatTensor(error)
+    #torch.save(error, osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'toy', opt.functional + 'pinn.pt'))
+
+
 
     # -------------------------------------------------------------------------------------------------------------------------------------
 
 @torch.no_grad()
-def eval(model: Callable[..., Tensor], 
-        grid: Tensor, 
+def eval(model: Callable[..., Tensor],
+        grid: Tensor,
         exact: Tensor) -> Tensor:
     """
     Compute the relative L2 norm
@@ -111,11 +123,11 @@ def help():
     """
     Print out the help information： python file.py help
     """
-    
+
     print("""
     usage : python file.py <function> [--args=value]
     <function> := train | make_plot | help
-    Example: 
+    Example:
             python {0} train --lr=1e-5
             python {0} help
 

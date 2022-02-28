@@ -19,30 +19,30 @@ class Poisson(Dataset):
 
     """
 
-    def __init__(self, num: int = 1000, boundary: bool = False, device: str ='cpu'):  
+    def __init__(self, num: int = 1000, boundary: bool = False, device: str ='cpu'):
         if boundary:
             tb = torch.cat((torch.rand(num, 1)* pi, torch.tensor([pi/2]).repeat(num)[:,None]), dim=1)
             bb = torch.cat((torch.rand(num, 1)* pi, torch.tensor([-pi/2.]).repeat(num)[:,None]), dim=1)
             rb = torch.cat((torch.tensor([pi]).repeat(num)[:,None], torch.rand(num, 1)*pi - pi/2), dim=1)
             lb = torch.cat((torch.tensor([0.]).repeat(num)[:,None], torch.rand(num, 1)*pi - pi/2), dim=1)
             self.data = torch.cat((tb, bb, rb, lb), dim=0)
-            self.data = self.data.to(device) 
+            self.data = self.data.to(device)
 
         else:
             lb = np.array([0., -pi/2])
             ran = np.array([pi, pi])
             self.data = torch.from_numpy(ran*lhs(2, num) + lb).float().to(device)        # generate the interior points
-        
+
     def __getitem__(self, index):
         x = self.data[index]
         return x
-    
+
     def __len__(self):
         return len(self.data)
 
 
-def poisson(num: int = 1000, 
-            boundary: bool = False, 
+def poisson(num: int = 1000,
+            boundary: bool = False,
             device: str ='cpu') -> Tensor:
     """
     2d poisson (0, pi)\times(-2/pi, 2/pi)
@@ -57,7 +57,7 @@ def poisson(num: int = 1000,
     Returns:
         Tensor: Date coordinates tensor (N \times 2 or 4N \times 2)
     """
-    
+
     if boundary:
         tb = torch.cat((torch.rand(num, 1)* pi, torch.tensor([pi/2]).repeat(num)[:,None]), dim=1)
         bb = torch.cat((torch.rand(num, 1)* pi, torch.tensor([-pi/2.]).repeat(num)[:,None]), dim=1)
@@ -85,31 +85,31 @@ class AllenCahn(Dataset):
         boundary (bool): Boundary or Interior
         device (str): cpu or cuda
     """
-    
-    def __init__(self, num: int = 1000, boundary: bool = False, device: str ='cpu'):  
+
+    def __init__(self, num: int = 1000, boundary: bool = False, device: str ='cpu'):
         if boundary:
             tb = torch.cat((torch.rand(num, 1)*2 - 1, torch.tensor([1.]).repeat(num)[:,None]), dim=1)
             bb = torch.cat((torch.rand(num, 1)*2 - 1, torch.tensor([-1.]).repeat(num)[:,None]), dim=1)
             rb = torch.cat((torch.tensor([1.]).repeat(num)[:,None], torch.rand(num, 1)*2 - 1), dim=1)
             lb = torch.cat((torch.tensor([-1.]).repeat(num)[:,None], torch.rand(num, 1)*2 - 1), dim=1)
             self.data = torch.cat((tb, bb, rb, lb), dim=0)
-            self.data = self.data.to(device) 
+            self.data = self.data.to(device)
 
         else:
             self.data = torch.from_numpy(lhs(2, num)*2 - 1).float().to(device)        # generate the interior points
             #self.data = torch.rand((num,2)).to(device)
-        
+
     def __getitem__(self, index):
         x = self.data[index]
         return x
-    
+
     def __len__(self):
         return len(self.data)
 
 
 
-def allencahn(num: int = 1000, 
-              boundary: bool = False, 
+def allencahn(num: int = 1000,
+              boundary: bool = False,
               device: str ='cpu') -> Tensor:
     """
     Allen-Cahn type problem (0, \infity)\times(0, 1)^2
@@ -124,24 +124,24 @@ def allencahn(num: int = 1000,
     Returns:
         Tensor: Date coordinates tensor (N \times 2 or 4N \times 2)
     """
-    
+
     if boundary:
         tb = torch.cat((torch.rand(num, 1)*2 - 1, torch.tensor([1.]).repeat(num)[:,None]), dim=1)
         bb = torch.cat((torch.rand(num, 1)*2 - 1, torch.tensor([-1.]).repeat(num)[:,None]), dim=1)
         rb = torch.cat((torch.tensor([1.]).repeat(num)[:,None], torch.rand(num, 1)*2 - 1), dim=1)
         lb = torch.cat((torch.tensor([-1.]).repeat(num)[:,None], torch.rand(num, 1)*2 - 1), dim=1)
         data = torch.cat((tb, bb, rb, lb), dim=0)
-        data = data.to(device) 
+        data = data.to(device)
         return data
     else:
         data = torch.from_numpy(lhs(2, num)*2 - 1).float().to(device)        # generate the interior points
         return data
-    
-    
-def heatpinn(num: int = 1000, 
-             data_type: str = 'boundary', 
+
+
+def heatpinn(num: int = 1000,
+             data_type: str = 'boundary',
              device: str = 'cpu') ->Tensor:
-    """ 
+    """
     2d poisson (0, pi)\times(-2/pi, 2/pi)\times(0,2) for PINN
     Boundary:  uniform on each boundary
     Interior: latin square sampling
@@ -154,7 +154,7 @@ def heatpinn(num: int = 1000,
     Returns:
         Tensor: (num, 3) dimension Tensor
     """
-    
+
     if data_type == 'boundary':
         tb = torch.cat((torch.rand(num, 1)* pi, torch.tensor([pi/2]).repeat(num)[:,None]), dim=1)
         bb = torch.cat((torch.rand(num, 1)* pi, torch.tensor([-pi/2.]).repeat(num)[:,None]), dim=1)
@@ -163,14 +163,14 @@ def heatpinn(num: int = 1000,
         data = torch.cat((tb, bb, rb, lb), dim=0)
         data = torch.cat((data, torch.rand(data.shape[0], 1)*2), dim = 1)
         return data.to(device)
-    
+
     elif data_type == 'initial':
         lb = np.array([0., -pi/2])
         ran = np.array([pi, pi])
         data = torch.from_numpy(ran*lhs(2, num) + lb).float()        # generate the interior points
         data = torch.cat((data, torch.tensor([0]).repeat(data.shape[0])[:,None]), dim = 1)
         return data.to(device)
-    
+
     else:
         lb = np.array([0., -pi/2])
         ran = np.array([pi, pi])
@@ -201,11 +201,11 @@ def heat(num: int = 1000,
         rb = torch.cat((torch.tensor([2.]).repeat(num)[:,None], torch.rand(num, 1)*2), dim=1)
         lb = torch.cat((torch.tensor([0.]).repeat(num)[:,None], torch.rand(num, 1)*2), dim=1)
         data = torch.cat((tb, bb, rb, lb), dim=0)
-        return data.to(device) 
+        return data.to(device)
     else:
         data = torch.from_numpy(lhs(2, num)*2).float().to(device)        # generate the interior points
         return data
-    
+
 def HeatFix(grid: Tensor,
         boundary: bool = False,
         device: str = 'cpu') -> Tensor:
@@ -213,7 +213,7 @@ def HeatFix(grid: Tensor,
     Fixed sample for heat equation
 
     Args:
-        grid (Tensor): tensor of grid 
+        grid (Tensor): tensor of grid
         boundary (bool, optional): [boundary or not]. Defaults to False.
         device (str, optional): [cpu or cuda]. Defaults to 'cpu'.
 
@@ -228,10 +228,10 @@ def HeatFix(grid: Tensor,
     else:
         data = grid[torch.logical_and(grid[:,0] != 0., grid[:,0] != 2),:]
         data = data[torch.logical_and(data[:,1] != 0., data[:,1] != 2),:]
-        return data.to(device)       
-    
+        return data.to(device)
 
-def poissoncycle(num: int = 1000, 
+
+def poissoncycle(num: int = 1000,
                  boundary: bool = False,
                  device: str = 'cpu') -> Tensor:
     """
@@ -259,15 +259,36 @@ def PoiHighGrid(num: int = 1000,
             d: int = 10,
             device: str ='cpu') -> Tensor:
     """
-    poisson (0, 1)^d 
+    poisson (0, 1)^d
     d: dimention
     Interior: latin square sampling
 
     Args:
-        num (int): number of points need to be sample. 
+        num (int): number of points need to be sample.
         device (str): cpu or gpu
 
     Returns:
         Tensor: Date coordinates tensor (N \times 2 or 4N \times 2)
     """
     return torch.from_numpy(2*lhs(d, num) - 1).float().to(device)
+
+def poissonsphere(num: int = 1000,
+                 boundary: bool = False,
+                 device: str = 'cpu')->Tensor:
+    """
+    Generate random points on sphere from uniform distribution.
+    https://scicomp.stackexchange.com/questions/29959/uniform-dots-distribution-in-a-sphere
+    Args:
+        num (int, optional): number of data points. Defaults to 1000.
+        data_type (str, optional): boundary condition. Defaults to boundary.
+        device (str, optional): 'cuda' or 'cpu'. Defaults to 'cpu'.
+    Returns:
+        Tensor: (num, 3) dimension Tensor
+    """
+    r = 1
+    theta = torch.rand(num)*2*pi
+    z = 2*torch.rand(num)-1
+    x = torch.pow( (1 - torch.pow(z,2) ),0.5)*torch.cos(theta)
+    y = torch.pow( (1 - torch.pow(z,2) ),0.5)*torch.sin(theta)
+    data = torch.cat((x.unsqueeze_(1),y.unsqueeze_(1),z.unsqueeze_(1)),dim=1)
+    return data.to(device)

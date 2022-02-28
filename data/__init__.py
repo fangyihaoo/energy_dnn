@@ -1,1 +1,1 @@
-from .dataset import Poisson, AllenCahn, poisson, allencahn, heatpinn, heat, HeatFix, poissoncycle, PoiHighGrid
+from .dataset import Poisson, AllenCahn, poisson, allencahn, heatpinn, heat, HeatFix, poissoncycle, PoiHighGrid,poissonsphere

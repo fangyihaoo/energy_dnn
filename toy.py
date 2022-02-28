@@ -32,16 +32,16 @@ def train(**kwargs):
                     'tanh' : nn.Tanh(),
                     'sigmoid': nn.Sigmoid(),
                     'leakyrelu': nn.LeakyReLU()}
-    keys = {'FClayer':opt.FClayer, 
+    keys = {'FClayer':opt.FClayer,
             'num_blocks':opt.num_blocks,
             'activation':ACTIVATION_MAP[opt.act],
             'num_input':opt.num_input,
-            'num_output':opt.num_oupt, 
+            'num_output':opt.num_oupt,
             'num_node':opt.num_node}
     gendat = DATASET_MAP[opt.functional]
     losfunc = LOSS_MAP[opt.functional]
     # -------------------------------------------------------------------------------------------------------------------------------------
-    
+
     # -------------------------------------------------------------------------------------------------------------------------------------
     # model initialization
     model = getattr(models, opt.model)(**keys)
@@ -86,16 +86,16 @@ def train(**kwargs):
             with torch.no_grad():
                 previous[0] = modelold(datI)
                 previous[1] = modelold(datB)
-            loss = losfunc(model, datI, datB, previous) 
+            loss = losfunc(model, datI, datB, previous)
             loss[0].backward()
             nn.utils.clip_grad_norm_(model.parameters(),  1)
             optimizer.step()
             step += 1
             err = eval(model, grid, exact)
-            error.append(err)        
+            error.append(err)
             if step == opt.step_size:
                 break
-            
+
         if epoch in timestamp:
             opt.lr = opt.lr * opt.lr_decay
         if epoch % 5 == 0:
@@ -103,12 +103,12 @@ def train(**kwargs):
         modelold.load_state_dict(model.state_dict())
     error = torch.FloatTensor(error)
     torch.save(error, osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'toy', opt.functional + 'ourmethod.pt'))
-    
+
     # -------------------------------------------------------------------------------------------------------------------------------------
 
 @torch.no_grad()
-def eval(model: Callable[..., Tensor], 
-        grid: Tensor, 
+def eval(model: Callable[..., Tensor],
+        grid: Tensor,
         exact: Tensor):
     """
     Compute the relative L2 norm
@@ -129,11 +129,11 @@ def help():
     """
     Print out the help information： python file.py help
     """
-    
+
     print("""
     usage : python file.py <function> [--args=value]
     <function> := train | make_plot | help
-    Example: 
+    Example:
             python {0} train --lr=1e-5
             python {0} help
 

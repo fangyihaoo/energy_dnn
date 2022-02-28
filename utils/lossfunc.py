@@ -15,8 +15,8 @@ def L2_Reg(model1: Callable[..., Tensor],
     return reg
 
 
-def PoiLoss(model: Callable[..., Tensor], 
-            dat_i: Tensor, 
+def PoiLoss(model: Callable[..., Tensor],
+            dat_i: Tensor,
             dat_b: Tensor,
             previous: List[Tensor]) -> Tuple[Tensor,Tensor]:
     """
@@ -25,7 +25,7 @@ def PoiLoss(model: Callable[..., Tensor],
     u = 0,                           u \in \partial \Omega (0, pi) \times (-pi/2, pi/2)
 
     Args:
-        model (Callable[..., Tensor]): Network 
+        model (Callable[..., Tensor]): Network
         dat_i (Tensor): Interior point
         dat_b (Tensor): Boundary point
         previous (Tuple[Tensor, Tensor]): Result from previous time step model. interior point for index 0, boundary for index 1
@@ -51,8 +51,8 @@ def PoiLoss(model: Callable[..., Tensor],
     return loss_i + 500*loss_b + loss_p, loss_i
 
 
-def PoiHighLoss(model: Callable[..., Tensor], 
-            dat: Tensor, 
+def PoiHighLoss(model: Callable[..., Tensor],
+            dat: Tensor,
             previous: List[Tensor]) -> Tensor:
     """
     Loss function for 2d Poisson equation
@@ -60,9 +60,9 @@ def PoiHighLoss(model: Callable[..., Tensor],
     u = 0,                           u \in \partial \Omega (0, 1) ^ d
 
     Args:
-        model (Callable[..., Tensor]): Network 
+        model (Callable[..., Tensor]): Network
         dat (Tensor): Interior point
-        previous (Tensor): Result from previous time step model. 
+        previous (Tensor): Result from previous time step model.
 
     Returns:
         Tensor: loss
@@ -77,13 +77,13 @@ def PoiHighLoss(model: Callable[..., Tensor],
     return loss +  loss_p
 
 
-def AllenCahn2dLoss(model: Callable[..., Tensor], 
-                    dat_i: Tensor, 
-                    dat_b: Tensor, 
+def AllenCahn2dLoss(model: Callable[..., Tensor],
+                    dat_i: Tensor,
+                    dat_b: Tensor,
                     previous: List[Tensor]) -> Tuple[Tensor,Tensor]:
     """
     Loss function for 2d Allen-Cahn type problem
-    
+
     \int (1/2 D(\delta phi)^2 + 1/4(phi^2 - 1)^2)dx
     x \in (-1,1)\times(-1,1)
 
@@ -107,13 +107,13 @@ def AllenCahn2dLoss(model: Callable[..., Tensor],
     loss_b += torch.mean(torch.pow((output_b[torch.logical_or(dat_b[:,1] == 1., dat_b[:,1] == -1),:]  - 1), 2))
     loss_p = 100*torch.mean(torch.pow(output_i - previous[0], 2))
     loss_p += 100*torch.mean(torch.pow(output_b - previous[1], 2))
-    
+
     return loss_i + 3000*loss_b + loss_p, loss_i
 
 
-def AllenCahnW(model: Callable[..., Tensor], 
-               dat_i: Tensor, 
-               dat_b: Tensor, 
+def AllenCahnW(model: Callable[..., Tensor],
+               dat_i: Tensor,
+               dat_b: Tensor,
                previous: List[Tensor]) -> Tuple[Tensor,Tensor]:
     """
     \int 0.5*|\nabla \phi|^2 + 0.25*(\phi^2 - 1)^2/epislon^2 dx + W*(\int\phidx - A)^2
@@ -137,7 +137,7 @@ def AllenCahnW(model: Callable[..., Tensor],
     output_b = model(dat_b)
     ux = torch.autograd.grad(outputs = output_i, inputs = dat_i, grad_outputs = torch.ones_like(output_i), retain_graph=True, create_graph=True)[0]
 
-    loss_i =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True) + 250*torch.pow(torch.pow(output_i, 2) - 1, 2)) 
+    loss_i =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True) + 250*torch.pow(torch.pow(output_i, 2) - 1, 2))
     loss_b = torch.mean(torch.pow((output_b + 1), 2))
     loss_w = 1000*torch.pow((torch.mean(output_i) - A), 2)
     loss_p = 100*torch.mean(torch.pow(output_i - previous[0], 2))
@@ -146,9 +146,9 @@ def AllenCahnW(model: Callable[..., Tensor],
     return loss_i + 500*loss_b + loss_w + loss_p, loss_i + loss_w
 
 
-def AllenCahnLB(model: Callable[...,Tensor], 
-                dat_i: Tensor, 
-                dat_b: Tensor, 
+def AllenCahnLB(model: Callable[...,Tensor],
+                dat_i: Tensor,
+                dat_b: Tensor,
                 previous: List[Tensor]) -> Tuple[Tensor,Tensor]:
     """
     1/|\Omega|\int xi^2/2 (\laplacian Phi + phi)^2 + \tau/2 * \phi^2 - \gamma/6 * \phi^3 + 1/24 * \phi^4 dx
@@ -181,14 +181,14 @@ def AllenCahnLB(model: Callable[...,Tensor],
 
 
 
-def HeatPINN(model: Callable[..., Tensor], 
-              dat_i: Tensor, 
-              dat_b: Tensor, 
+def HeatPINN(model: Callable[..., Tensor],
+              dat_i: Tensor,
+              dat_b: Tensor,
               dat_f: Tensor) -> Tensor:
     """The loss function for heat equation with PINN
 
     Args:
-        model (Callable[..., Tensor]): Network 
+        model (Callable[..., Tensor]): Network
         dat_i (Tensor): Initial points
         dat_b (Tensor): Boundary points
         dat_f (Tensor): Collocation points
@@ -205,30 +205,30 @@ def HeatPINN(model: Callable[..., Tensor],
     ut = du[:,2].unsqueeze_(1)
     ddu = torch.autograd.grad(outputs = du, inputs = dat_f, grad_outputs = torch.ones_like(du), create_graph=True)[0]
     lu = ddu[:,0:2]
-    
+
     loss = torch.mean(torch.pow(output_i, 2))
     loss += 100*torch.mean(torch.pow(output_b, 2))
     loss += torch.mean(torch.pow(ut - torch.sum(lu, dim=1, keepdim=True) - f, 2))
-    
+
     return loss
 
 
-def PoissPINN(model: Callable[..., Tensor], 
-              dat_i: Tensor, 
+def PoissPINN(model: Callable[..., Tensor],
+              dat_i: Tensor,
               dat_b: Tensor) -> Tensor:
     """The loss function for poisson equation with PINN
 
     Args:
-        model (Callable[..., Tensor]): Network 
+        model (Callable[..., Tensor]): Network
         dat_i (Tensor): Interior points
         dat_b (Tensor): Boundary points
 
     Returns:
         Tensor: loss
     """
-    
+
     bd = lambda x, y : (torch.sin(x)*torch.cos(y)).unsqueeze_(1) # for the exact solution at boundary
-    
+
     output_b = model(dat_b)
     f = (2*torch.sin(dat_i[:,0])*torch.cos(dat_i[:,1])).unsqueeze_(1)
     dat_i.requires_grad = True
@@ -237,29 +237,29 @@ def PoissPINN(model: Callable[..., Tensor],
     ddu = torch.autograd.grad(outputs = du, inputs = dat_i, grad_outputs = torch.ones_like(du), retain_graph=True, create_graph=True)[0]
     loss = torch.mean(torch.pow(output_b - bd(dat_b[:,0], dat_b[:,1]), 2))
     loss += torch.mean(torch.pow(torch.sum(ddu, dim=1, keepdim=True) + f, 2))
-    
-    return loss
-    
-    
 
-def PoissCyclePINN(model: Callable[..., Tensor], 
-                   dat_i: Tensor, 
+    return loss
+
+
+
+def PoissCyclePINN(model: Callable[..., Tensor],
+                   dat_i: Tensor,
                    dat_b: Tensor) -> Tensor:
     """The loss function for poisson equation with PINN (cycle)
-    
+
     -\nabla u = 1,   u = 1 - 0.25(x^2 + y^2)
 
     Args:
-        model (Callable[..., Tensor]): Network 
+        model (Callable[..., Tensor]): Network
         dat_i (Tensor): Interior points
         dat_b (Tensor): Boundary points
 
     Returns:
         Tensor: loss
     """
-    
+
     bd = lambda x, y : (1 - 0.25*(x**2 + y**2)).unsqueeze_(1) # for the exact solution at boundary
-    
+
     output_b = model(dat_b)
     dat_i.requires_grad = True
     output_i = model(dat_i)
@@ -267,13 +267,13 @@ def PoissCyclePINN(model: Callable[..., Tensor],
     ddu = torch.autograd.grad(outputs = du, inputs = dat_i, grad_outputs = torch.ones_like(du), retain_graph=True, create_graph=True)[0]
     loss = torch.mean(torch.pow(output_b - bd(dat_b[:,0], dat_b[:,1]), 2))
     loss += torch.mean(torch.pow(torch.sum(ddu, dim=1, keepdim=True) + 1, 2))
-    
+
     return loss
 
 
-    
-def PoiCycleLoss(model: Callable[..., Tensor], 
-            dat_i: Tensor, 
+
+def PoiCycleLoss(model: Callable[..., Tensor],
+            dat_i: Tensor,
             dat_b: Tensor,
             previous: List[Tensor]) -> Tuple[Tensor,Tensor]:
     """
@@ -282,7 +282,7 @@ def PoiCycleLoss(model: Callable[..., Tensor],
     u = 0,                           u \in \partial \Omega x^2 + y^2 = 1
 
     Args:
-        model (Callable[..., Tensor]): Network 
+        model (Callable[..., Tensor]): Network
         dat_i (Tensor): Interior point
         dat_b (Tensor): Boundary point
         previous (Tuple[Tensor, Tensor]): Result from previous time step model. interior point for index 0, boundary for index 1
@@ -298,7 +298,7 @@ def PoiCycleLoss(model: Callable[..., Tensor],
     ux = torch.autograd.grad(outputs = output_i, inputs = dat_i, grad_outputs = torch.ones_like(output_i), retain_graph=True, create_graph=True)[0]
     loss_i =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True) - output_i)
     loss_b = torch.mean(torch.pow(output_b - bd(dat_b[:,0], dat_b[:,1]),2))
-    
+
     if previous:
         loss_p = 50*torch.mean(torch.pow(output_i - previous[0], 2))
         loss_p += 50*torch.mean(torch.pow(output_b - previous[1], 2))
@@ -306,16 +306,16 @@ def PoiCycleLoss(model: Callable[..., Tensor],
         loss_p = 0
 
     return loss_i + 500*loss_b + loss_p, loss_i
-    
-    
-def PFVB(model: Callable[...,Tensor], 
-         dat_i: Tensor, 
-         dat_b: Tensor, 
+
+
+def PFVB(model: Callable[...,Tensor],
+         dat_i: Tensor,
+         dat_b: Tensor,
          previous: Tuple[Tensor,Tensor]) -> Tuple[Tensor,Tensor]:
     """[summary]
 
     Args:
-        model (Callable[..., Tensor]): Network 
+        model (Callable[..., Tensor]): Network
         dat_i (Tensor): Interior point
         dat_b (Tensor): Boundary point
         previous (Tuple[Tensor, Tensor]): Result from previous time step model. interior point for index 0, boundary for index 1
@@ -341,12 +341,12 @@ def PFVB(model: Callable[...,Tensor],
     loss_p = 50*torch.mean(torch.pow(output_i - previous[0], 2))
     # loss_p += 50*torch.mean(torch.pow(output_b - previous[1], 2))
     loss_b = torch.mean(torch.pow((output_b  + 1), 2))
-    
+
     return loss_i + 1000*loss_b + loss_p, loss_i
 
-def Heat(model: Callable[...,Tensor], 
-         dat_i: Tensor, 
-         dat_b: Tensor, 
+def Heat(model: Callable[...,Tensor],
+         dat_i: Tensor,
+         dat_b: Tensor,
          previous: Tuple[Tensor,Tensor]) -> Tuple[Tensor,Tensor]:
     """
     2d Heat equation: u_t = \nabla u, x \in [0,2]^2
@@ -369,8 +369,33 @@ def Heat(model: Callable[...,Tensor],
     ux = torch.autograd.grad(outputs = output_i, inputs = dat_i, grad_outputs = torch.ones_like(output_i), retain_graph=True, create_graph=True)[0]
     loss_i =  torch.mean(0.5 * torch.sum(torch.pow(ux, 2),dim=1,keepdim=True)) * 4
     loss_b = torch.mean(torch.pow(output_b,2))
-    
+
     loss_p = 50*torch.mean(torch.pow(output_i - previous[0], 2)) * 4
     loss_p += 50*torch.mean(torch.pow(output_b - previous[1], 2)) * 4
 
     return loss_i + 500*loss_b + loss_p, loss_i
+
+def PoissSpherePINN(model: Callable[..., Tensor],
+                   dat_i: Tensor,
+                   dat_b: Tensor=None,
+                   lam = 1 ) -> Tensor:
+    """The loss function for poisson with PINN (sphere),
+    https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8946607
+    \laplace_{\Gamma} u = -18x1x2x3, u \on S^2.
+    loss= loss_i + loss_n =  (\laplace u + 18x1x2x3)^2 + <\nabla u,x>^2.
+    Args:
+        model (Callable[..., Tensor]): Network
+        dat_i (Tensor): Interior points
+    Returns:
+        Tensor: loss
+    """
+    dat_i.requires_grad = True
+    output_i = model(dat_i)
+    f = 18*(dat_i[:,0]*dat_i[:,1]*dat_i[:,2]).unsqueeze_(1)
+    du = torch.autograd.grad(outputs = output_i, inputs = dat_i, grad_outputs = torch.ones_like(output_i), retain_graph=True, create_graph=True)[0]
+    ddu = torch.autograd.grad(outputs = du, inputs = dat_i, grad_outputs = torch.ones_like(du), retain_graph=True, create_graph=True)[0]
+    loss = torch.mean(torch.pow(torch.sum(ddu, dim=1, keepdim=True) + f, 2))
+    loss += lam*torch.mean(torch.pow(du*dat_i,2))
+    return loss
+
+

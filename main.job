@@ -4,7 +4,22 @@
 #$ -q gpu             
 #$ -l gpu_card=1
 #$ -N deepritz
+#$ -t 1-36
 
 module load python
 
+python models/iDNN_mean.py $SsGE_TASK_ID
+
 python HighDimPoi.py train --model='ResNet' --functional='poi' --num_input=10 --num_blocks=5 --num_node=30 --dimension=10 --max_epoch=150 --step_size=200 --lr=1e-2 --lr_decay=0.5
+
+python Poisson.py train --model='ResNet' --functional='poi' --num_input=2 --num_blocks=5 --num_node=30 --max_epoch=20 --step_size=10 --lr=1e-2 --lr_decay=0.5
+
+python toy.py train --model='ResNet' --functional='poissoncycle' --num_input=2 --num_blocks=5 --num_node=30 --max_epoch=20 --step_size=10 --lr=1e-2 --lr_decay=0.5 --exact='poiss2dcycleexact.pt' --grid='poiss2dcyclegrid.pt'
+
+python toyDritz.py train --model='ResNet' --functional='poissoncycle' --num_input=2 --num_blocks=5 --num_node=30 --max_epoch=20 --step_size=10 --lr=1e-2 --lr_decay=0.9 --exact='poiss2dcycleexact.pt' --grid='poiss2dcyclegrid.pt'
+
+##PINN
+python toyPinn.py train --model='ResNet' --functional='poissoncycle' --num_input=2 --num_blocks=5 --num_node=30 --max_epoch=100000 --step_size=10000 --lr=1e-2 --lr_decay=0.5 --exact='poiss2dcycleexact.pt' --grid='poiss2dcyclegrid.pt'
+python toyPinn.py train --model='ResNet' --functional='poissonsphere' --num_input=3 --num_blocks=5 --num_node=30 --max_epoch=80000 --step_size=10000 --lr=1e-2 --lr_decay=0.5 --exact='poiss3dsphereexact.pt' --grid='poiss3dspheregrid.pt'
+
+1/2*Torch.mean(output)**2
