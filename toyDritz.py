@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
 import models
-from data import poisson, poissoncycle
+from data import poisson, poissoncycle,poissonsphere
 from torch.optim.lr_scheduler import StepLR
 from utils import Optim
-from utils import PoiLoss,  PoiCycleLoss
+from utils import PoiLoss,  PoiCycleLoss,PoiSphereLoss
 from utils import weight_init
 import os.path as osp
 from typing import Callable
@@ -26,9 +26,11 @@ def train(**kwargs):
     # -------------------------------------------------------------------------------------------------------------------------------------
     # model configuration, modified the DATASET_MAP and LOSS_MAP according to your need
     DATASET_MAP = {'poi': poisson,
-                   'poissoncycle': poissoncycle}
+                   'poissoncycle': poissoncycle,
+                   'poissonsphere': poissonsphere}
     LOSS_MAP = {'poi':PoiLoss,
-                'poissoncycle': PoiCycleLoss}
+                'poissoncycle': PoiCycleLoss,
+                'poissonsphere': PoiSphereLoss}
     ACTIVATION_MAP = {'relu' : nn.ReLU(),
                     'tanh' : nn.Tanh(),
                     'sigmoid': nn.Sigmoid(),
@@ -58,6 +60,7 @@ def train(**kwargs):
     optimizer = op.optimizer
     scheduler = StepLR(optimizer, step_size= opt.step_size, gamma = opt.lr_decay)
     error = []
+    train_loss = []
     # -------------------------------------------------------------------------------------------------------------------------------------
 
     # -------------------------------------------------------------------------------------------------------------------------------------
@@ -68,19 +71,25 @@ def train(**kwargs):
         # --------------Optimization Loop at each time step--------------
         optimizer.zero_grad()
         datI = gendat(num = 1000, boundary = False, device = device)
-        datB = gendat(num = 250, boundary = True, device = device)
-        loss = losfunc(model, datI, datB, None)
+        if opt.functional == 'poissonsphere':
+            loss = losfunc(model,datI,dat_b=None,lam=opt.lam,previous=None)
+        else:
+            datB = gendat(num = 0, boundary = True, device = device)
+            loss = losfunc(model, datI, datB,None)
         loss[0].backward()
         nn.utils.clip_grad_norm_(model.parameters(),  1)
         optimizer.step()
         scheduler.step()
         err = eval(model, grid, exact)
-        error.append(err)
-        if epoch % 5000 == 0:
-            print(f'The epoch is {epoch}, The error is {err}')
+        if epoch % 5000== 0:
+            train_loss.append(loss[0])
+            error.append(err.item())
+            print(f'Epoch: {epoch:05d}   Error: {err.item():.5f}   Loss: {loss[0]:.5f}')
     #error = torch.FloatTensor(error)
     #torch.save(error, osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'toy', opt.functional + 'Dritz.pt'))
 
+    with open(osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'toy', 'deepRitz.txt'), 'a') as file:
+        file.write(f'\nlam: {opt.lam}\ndecay: {opt.lr_decay} \nerror: {min(error)} \nloss:{min(train_loss)}' )
     # -------------------------------------------------------------------------------------------------------------------------------------
 
 @torch.no_grad()

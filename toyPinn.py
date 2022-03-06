@@ -85,7 +85,7 @@ def train(**kwargs):
             error.append(err.item())
             print(f'Epoch: {epoch:05d}   Error: {err.item():.5f}   Loss: {loss.item():.5f}')
 
-    with open(osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'toy', opt.functional + f'lam_{opt.lam}.txt'), 'w') as file:
+    with open(osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'toy', opt.functional + f'lam_{opt.lam}_rate_{opt.lr_decay}.txt'), 'w') as file:
         file.write(f'error: {min(error)} \n loss:{min(train_loss)}' )
     #error = torch.FloatTensor(error)
     #torch.save(error, osp.join(osp.dirname(osp.realpath(__file__)), 'log', 'toy', opt.functional + 'pinn.pt'))

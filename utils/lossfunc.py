@@ -381,7 +381,7 @@ def PoissSpherePINN(model: Callable[..., Tensor],
                    lam = 1 ) -> Tensor:
     """The loss function for poisson with PINN (sphere),
     https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=8946607
-    \laplace_{\Gamma} u = -18x1x2x3, u \on S^2.
+    \laplace_{\Gamma} u = -12x1x2x3, u \on S^2.
     loss= loss_i + loss_n =  (\laplace u + 18x1x2x3)^2 + <\nabla u,x>^2.
     Args:
         model (Callable[..., Tensor]): Network
@@ -391,11 +391,43 @@ def PoissSpherePINN(model: Callable[..., Tensor],
     """
     dat_i.requires_grad = True
     output_i = model(dat_i)
-    f = 18*(dat_i[:,0]*dat_i[:,1]*dat_i[:,2]).unsqueeze_(1)
+    f = 12*(dat_i[:,0]*dat_i[:,1]*dat_i[:,2]).unsqueeze_(1)
     du = torch.autograd.grad(outputs = output_i, inputs = dat_i, grad_outputs = torch.ones_like(output_i), retain_graph=True, create_graph=True)[0]
     ddu = torch.autograd.grad(outputs = du, inputs = dat_i, grad_outputs = torch.ones_like(du), retain_graph=True, create_graph=True)[0]
-    loss = torch.mean(torch.pow(torch.sum(ddu, dim=1, keepdim=True) + f, 2))
-    loss += lam*torch.mean(torch.pow(du*dat_i,2))
+    loss = torch.mean(torch.pow(torch.sum(ddu, dim=1, keepdim=True), 2))
+    #loss += lam*torch.mean(torch.pow(du*dat_i,2))
+    loss += lam*torch.pow(torch.mean(output_i),2)
     return loss
+
+def PoiSphereLoss(model: Callable[..., Tensor],
+            dat_i: Tensor,
+            dat_b: Tensor,
+            lam =1,
+            previous=None) -> Tuple[Tensor,Tensor]:
+    """
+    The loss function for poisson in weak form (Deep Ritz)
+    -\laplace_{\Gamma} u = 12x1x2x3, u \on S^2.
+    Args:
+        model (Callable[..., Tensor]): Network
+        dat_i (Tensor): Interior points
+    Returns:
+        Tensor: loss
+    """
+    dat_i.requires_grad = True
+    output_i = model(dat_i)
+    f = 12*(dat_i[:,0]*dat_i[:,1]*dat_i[:,2]).unsqueeze_(1)
+    du = torch.autograd.grad(outputs = output_i, inputs = dat_i, grad_outputs = torch.ones_like(output_i), retain_graph=True, create_graph=True)[0]
+    du_sphere= du -torch.sum(du*dat_i,dim=1,keepdim=True)*dat_i
+    loss = torch.mean(0.5 * torch.sum(torch.pow(du_sphere, 2),dim=1,keepdim=True)-f*output_i)
+    #loss += lam*torch.mean(torch.pow(du*dat_i,2))
+    loss += lam*torch.pow(torch.mean(output_i),2)
+    if previous:
+        loss_p = 50*torch.mean(torch.pow(output_i - previous[0], 2))
+    else:
+        loss_p = 0
+
+    return loss+loss_p,loss
+
+
 
 

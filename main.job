@@ -22,4 +22,5 @@ python toyDritz.py train --model='ResNet' --functional='poissoncycle' --num_inpu
 python toyPinn.py train --model='ResNet' --functional='poissoncycle' --num_input=2 --num_blocks=5 --num_node=30 --max_epoch=100000 --step_size=10000 --lr=1e-2 --lr_decay=0.5 --exact='poiss2dcycleexact.pt' --grid='poiss2dcyclegrid.pt'
 python toyPinn.py train --model='ResNet' --functional='poissonsphere' --num_input=3 --num_blocks=5 --num_node=30 --max_epoch=80000 --step_size=10000 --lr=1e-2 --lr_decay=0.5 --exact='poiss3dsphereexact.pt' --grid='poiss3dspheregrid.pt'
 
-1/2*Torch.mean(output)**2
+##Deep Ritz
+python toyDritz.py train --model='ResNet' --functional='poissonsphere' --num_input=3 --num_blocks=5 --num_node=30 --max_epoch=80000 --step_size=10000 --lr=1e-2 --lr_decay=0.5 --exact='poiss3dsphereexact.pt' --grid='poiss3dspheregrid.pt'
